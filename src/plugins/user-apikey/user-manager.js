@@ -3,14 +3,14 @@
  * 每个用户有自己的账号、密码、API key 和每日额度
  */
 
-import { promises as fs } from 'fs';
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { promises as fs, existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import logger from '../../utils/logger.js';
 
-const USERS_STORE_FILE = path.join(process.cwd(), 'configs', 'user-apikey-users.json');
-const TOKEN_STORE_FILE = path.join(process.cwd(), 'configs', 'user-apikey-tokens.json');
+const CONFIGS_DIR = path.join(process.cwd(), 'configs');
+const USERS_STORE_FILE = path.join(CONFIGS_DIR, 'user-apikey-users.json');
+const TOKEN_STORE_FILE = path.join(CONFIGS_DIR, 'user-apikey-tokens.json');
 
 const DEFAULT_DAILY_LIMIT = 200; // 普通用户默认每日额度
 
@@ -22,6 +22,16 @@ let persistTimer = null;
 
 function ensureLoaded() {
     if (userStore !== null) return;
+    
+    // 【修复】自动创建 configs 目录，防存档失败
+    if (!existsSync(CONFIGS_DIR)) {
+        try {
+            mkdirSync(CONFIGS_DIR, { recursive: true });
+        } catch (e) {
+            logger.error('[UserApiKey] Failed to create configs directory:', e.message);
+        }
+    }
+
     try {
         userStore = existsSync(USERS_STORE_FILE)
             ? JSON.parse(readFileSync(USERS_STORE_FILE, 'utf8'))
