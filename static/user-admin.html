@@ -176,14 +176,29 @@
 </div>
 
 <script>
+// 安全跳转函数：防止在沙盒环境中触发无效的 URL 解析错误
+function safeRedirect(url) {
+    try {
+        window.location.href = url;
+    } catch (e) {
+        console.warn('预览环境拦截跳转至:', url);
+        document.body.innerHTML = `
+            <div style="padding: 60px 20px; text-align: center; color: var(--text-primary); font-family: sans-serif;">
+                <h2 style="margin-bottom: 16px;"><i class="fas fa-shield-alt" style="color: var(--primary-color);"></i> 沙盒环境拦截</h2>
+                <p>由于代码预览工具的安全限制，页面已停止向 <strong>${url}</strong> 的重定向行为。</p>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-top: 8px;">(在您的真实服务器上，该跳转将正常执行)</p>
+            </div>`;
+    }
+}
+
 const TOKEN = localStorage.getItem('uak_token');
 const ROLE = localStorage.getItem('uak_role');
-if (!TOKEN || ROLE !== 'admin') window.location.href = '/user-login.html';
 
 let allUsers = [];
 
 function showAlert(msg, type = 'error') {
     const el = document.getElementById('globalAlert');
+    if (!el) return;
     el.textContent = msg;
     el.className = 'alert ' + type;
     el.style.display = msg ? 'block' : 'none';
@@ -191,6 +206,7 @@ function showAlert(msg, type = 'error') {
 
 function modalAlert(id, msg, type = 'error') {
     const el = document.getElementById(id);
+    if (!el) return;
     el.textContent = msg;
     el.className = 'alert ' + type;
     el.style.display = msg ? 'block' : 'none';
@@ -206,7 +222,11 @@ async function loadData() {
             fetch('/api/uak/admin/users', { headers: headers() }),
             fetch('/api/uak/admin/stats', { headers: headers() })
         ]);
-        if (usersRes.status === 403 || usersRes.status === 401) { localStorage.clear(); window.location.href = '/user-login.html'; return; }
+        if (usersRes.status === 403 || usersRes.status === 401) { 
+            localStorage.clear(); 
+            safeRedirect('/user-login.html'); 
+            return; 
+        }
 
         const usersData = await usersRes.json();
         const statsData = await statsRes.json();
@@ -221,7 +241,7 @@ async function loadData() {
             document.getElementById('statToday').textContent = s.todayTotalUsage;
             document.getElementById('statAll').textContent = s.totalUsage;
         }
-    } catch (e) { showAlert('加载失败，请刷新'); }
+    } catch (e) { showAlert('加载失败或解析错误，请刷新重试'); }
 }
 
 function filterUsers() {
@@ -232,6 +252,7 @@ function filterUsers() {
 
 function renderTable(users) {
     const tbody = document.getElementById('userTable');
+    if (!tbody) return;
     if (!users.length) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">暂无用户</td></tr>';
         return;
@@ -290,7 +311,10 @@ async function saveEdit() {
         });
         const data = await res.json();
         if (data.success) { closeModal(); loadData(); showAlert('保存成功', 'success'); }
-        else modalAlert('modalAlert', data.message || '保存失败');
+        else {
+            const errMsg = data.message || (data.error && data.error.message) || '保存失败';
+            modalAlert('modalAlert', errMsg);
+        }
     } catch (e) { modalAlert('modalAlert', '网络错误'); }
 }
 
@@ -300,7 +324,10 @@ async function resetUsage(username) {
         const res = await fetch(`/api/uak/admin/users/${encodeURIComponent(username)}/reset-usage`, { method: 'POST', headers: headers() });
         const data = await res.json();
         if (data.success) { loadData(); showAlert('用量已重置', 'success'); }
-        else showAlert(data.message || '操作失败');
+        else {
+            const errMsg = data.message || (data.error && data.error.message) || '操作失败';
+            showAlert(errMsg);
+        }
     } catch (e) { showAlert('网络错误'); }
 }
 
@@ -310,7 +337,10 @@ async function deleteUser(username) {
         const res = await fetch(`/api/uak/admin/users/${encodeURIComponent(username)}`, { method: 'DELETE', headers: headers() });
         const data = await res.json();
         if (data.success) { loadData(); showAlert('用户已删除', 'success'); }
-        else showAlert(data.message || '删除失败');
+        else {
+            const errMsg = data.message || (data.error && data.error.message) || '删除失败';
+            showAlert(errMsg);
+        }
     } catch (e) { showAlert('网络错误'); }
 }
 
@@ -338,7 +368,10 @@ async function createUser() {
             body: JSON.stringify({ username, password })
         });
         const regData = await regRes.json();
-        if (!regData.success) return modalAlert('createAlert', regData.message || '创建失败');
+        if (!regData.success) {
+            const errMsg = regData.message || (regData.error && regData.error.message) || '创建失败';
+            return modalAlert('createAlert', errMsg);
+        }
 
         // 再更新角色和额度
         await fetch(`/api/uak/admin/users/${encodeURIComponent(username)}`, {
@@ -353,10 +386,12 @@ async function createUser() {
 }
 
 async function logout() {
-    await fetch('/api/uak/logout', { method: 'POST', headers: headers() });
+    try {
+        await fetch('/api/uak/logout', { method: 'POST', headers: headers() });
+    } catch(e) {} // 忽略网络错误
     localStorage.clear();
     document.cookie = 'uak_token=; max-age=0; path=/';
-    window.location.href = '/user-login.html';
+    safeRedirect('/user-login.html');
 }
 
 // 关闭弹窗点击遮罩
@@ -364,8 +399,13 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
 });
 
-loadData();
-setInterval(loadData, 30000);
+// 初始化鉴权拦截与按需加载
+if (!TOKEN || ROLE !== 'admin') {
+    safeRedirect('/user-login.html');
+} else {
+    loadData();
+    setInterval(loadData, 30000);
+}
 </script>
 </body>
 </html>
