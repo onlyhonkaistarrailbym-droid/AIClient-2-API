@@ -798,10 +798,10 @@ export async function handleUnaryRequest(res, service, model, requestBody, fromP
 /**
  * 夜划Ngt: 给模型列表中的每个模型 ID 附加渠道后缀标签。
  * 标签规则（可在此处自定义）：
- *   gemini-antigravity  → [Ngt-AG]
- *   gemini-cli-oauth    → [Ngt-CLI]
- *   claude-kiro-oauth   → [Ngt-Kiro]
- *   其他渠道            → 不加后缀
+ * gemini-antigravity  → [Ngt-AG]
+ * gemini-cli-oauth    → [Ngt-CLI]
+ * claude-kiro-oauth   → [Ngt-Kiro]
+ * 其他渠道            → 不加后缀
  *
  * 若环境变量 NGT_MODEL_LABELS=false，则禁用该功能。
  */
@@ -818,55 +818,78 @@ function appendNgtModelLabels(modelList, CONFIG, endpointType) {
 
     const provider = CONFIG.MODEL_PROVIDER;
 
-    // AUTO 模式：每个模型 ID 已经是 "providerType:modelName" 格式，逐个处理
-    if (provider === 'auto') {
-        const addLabelToId = (id) => {
-            const colonIdx = id.indexOf(':');
-            if (colonIdx === -1) return id;
-            const pType = id.slice(0, colonIdx);
-            const mName = id.slice(colonIdx + 1);
-            const label = PROVIDER_LABELS[pType];
-            return label ? `${mName}${label}` : id;
-        };
-
-        if (endpointType === ENDPOINT_TYPE.OPENAI_MODEL_LIST && modelList && Array.isArray(modelList.data)) {
-            return {
-                ...modelList,
-                data: modelList.data.map(m => ({ ...m, id: addLabelToId(m.id) }))
-            };
-        }
-        if (endpointType === ENDPOINT_TYPE.GEMINI_MODEL_LIST && modelList && Array.isArray(modelList.models)) {
-            return {
-                ...modelList,
-                models: modelList.models.map(m => {
-                    const rawId = m.name.replace(/^models\//, '');
-                    const newId = addLabelToId(rawId);
-                    return { ...m, name: `models/${newId}`, displayName: newId };
-                })
-            };
-        }
-        return modelList;
-    }
-
-    // 单提供商模式
-    const label = PROVIDER_LABELS[provider];
-    if (!label) return modelList; // 该渠道不需要标签
+    // 辅助函数：去掉 provider 冒号前缀
+    const cleanId = (id) => {
+        const colonIdx = id.indexOf(':');
+        return colonIdx !== -1 ? id.slice(colonIdx + 1) : id;
+    };
 
     if (endpointType === ENDPOINT_TYPE.OPENAI_MODEL_LIST && modelList && Array.isArray(modelList.data)) {
-        return {
-            ...modelList,
-            data: modelList.data.map(m => ({ ...m, id: `${m.id}${label}` }))
-        };
+        let expandedData = [];
+        const seenIds = new Set();
+
+        modelList.data.forEach(m => {
+            const baseId = cleanId(m.id);
+            const originalPType = m.id.indexOf(':') !== -1 ? m.id.split(':')[0] : provider;
+            let originalLabel = PROVIDER_LABELS[originalPType] || '';
+
+            // 1. 添加当前渠道本该有的标签模型
+            const labeledId = `${baseId}${originalLabel}`;
+            if (!seenIds.has(labeledId)) {
+                expandedData.push({ ...m, id: labeledId });
+                seenIds.add(labeledId);
+            }
+
+            // 2. 核心修改：如果是 Gemini 模型，强制分裂出 AG 和 CLI 两个选项，实现同显
+            if (baseId.startsWith('gemini-')) {
+                const agId = `${baseId}[Ngt-AG]`;
+                const cliId = `${baseId}[Ngt-CLI]`;
+                if (!seenIds.has(agId)) {
+                    expandedData.push({ ...m, id: agId });
+                    seenIds.add(agId);
+                }
+                if (!seenIds.has(cliId)) {
+                    expandedData.push({ ...m, id: cliId });
+                    seenIds.add(cliId);
+                }
+            }
+            // Claude 同理
+            if (baseId.startsWith('claude-')) {
+                const kiroId = `${baseId}[Ngt-Kiro]`;
+                if (!seenIds.has(kiroId)) {
+                    expandedData.push({ ...m, id: kiroId });
+                    seenIds.add(kiroId);
+                }
+            }
+        });
+        return { ...modelList, data: expandedData };
     }
+
     if (endpointType === ENDPOINT_TYPE.GEMINI_MODEL_LIST && modelList && Array.isArray(modelList.models)) {
-        return {
-            ...modelList,
-            models: modelList.models.map(m => {
-                const rawId = m.name.replace(/^models\//, '');
-                const newId = `${rawId}${label}`;
-                return { ...m, name: `models/${newId}`, displayName: newId };
-            })
-        };
+        let expandedModels = [];
+        const seenIds = new Set();
+
+        modelList.models.forEach(m => {
+            const rawName = m.name.replace(/^models\//, '');
+            const baseId = cleanId(rawName);
+            const originalPType = rawName.indexOf(':') !== -1 ? rawName.split(':')[0] : provider;
+            let originalLabel = PROVIDER_LABELS[originalPType] || '';
+
+            const addModel = (labelExt) => {
+                const newId = `${baseId}${labelExt}`;
+                if (!seenIds.has(newId)) {
+                    expandedModels.push({ ...m, name: `models/${newId}`, displayName: newId });
+                    seenIds.add(newId);
+                }
+            };
+
+            addModel(originalLabel);
+            if (baseId.startsWith('gemini-')) {
+                addModel('[Ngt-AG]');
+                addModel('[Ngt-CLI]');
+            }
+        });
+        return { ...modelList, models: expandedModels };
     }
 
     return modelList;
@@ -989,6 +1012,31 @@ export async function handleContentGenerationRequest(req, res, service, endpoint
     if (!model) {
         throw new Error("Could not determine the model from the request.");
     }
+
+    // === [新增: Ngt 标签智能剥离与强制路由拦截] ===
+    let forceProvider = null;
+    if (model.endsWith('[Ngt-AG]')) {
+        forceProvider = MODEL_PROVIDER.ANTIGRAVITY;
+        model = model.replace('[Ngt-AG]', '');
+    } else if (model.endsWith('[Ngt-CLI]')) {
+        forceProvider = MODEL_PROVIDER.GEMINI_CLI;
+        model = model.replace('[Ngt-CLI]', '');
+    } else if (model.endsWith('[Ngt-Kiro]')) {
+        forceProvider = MODEL_PROVIDER.KIRO_API;
+        model = model.replace('[Ngt-Kiro]', '');
+    }
+
+    if (forceProvider) {
+        logger.info(`[Ngt Route] Intercepted model tag, routing to: ${forceProvider}, clean model: ${model}`);
+        // 强制覆盖提供商，确保进入正确的号池
+        CONFIG = { ...CONFIG, MODEL_PROVIDER: forceProvider };
+        // 同步清理 requestBody 里的模型名，避免传给上游引发 404
+        if (originalRequestBody.model) {
+            originalRequestBody.model = model;
+        }
+    }
+    // ===============================================
+
     logger.info(`[Content Generation] Model: ${model}, Stream: ${isStream}`);
 
     let actualCustomName = CONFIG.customName;
