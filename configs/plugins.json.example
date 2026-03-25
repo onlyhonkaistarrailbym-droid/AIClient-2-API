@@ -10,3 +10,8 @@
     }
   }
 }
+{
+  "plugins": {
+    "user-apikey": { "enabled": true }
+  }
+}
