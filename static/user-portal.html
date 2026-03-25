@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户中心</title>
+    <link rel="stylesheet" href="app/base.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { background: var(--bg-secondary); min-height: 100vh; }
+        .navbar { background: var(--bg-primary); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm); }
+        .navbar-inner { max-width: 900px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+        .brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; color: var(--text-primary); }
+        .brand i { color: var(--primary-color); font-size: 22px; }
+        .nav-right { display: flex; align-items: center; gap: 12px; }
+        .username-badge { background: var(--bg-secondary); padding: 4px 12px; border-radius: var(--radius-full); font-size: 13px; color: var(--text-secondary); border: 1px solid var(--border-color); }
+        .btn-logout { padding: 6px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: transparent; color: var(--text-secondary); font-size: 13px; cursor: pointer; transition: all 0.2s; }
+        .btn-logout:hover { border-color: var(--danger-color); color: var(--danger-color); }
+        .main { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+        .stat-card { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 20px; }
+        .stat-label { font-size: 12px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        .stat-value { font-size: 28px; font-weight: 700; color: var(--text-primary); margin-top: 6px; }
+        .stat-sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+        .progress-bar { background: var(--bg-secondary); border-radius: 99px; height: 6px; margin-top: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 99px; background: var(--primary-color); transition: width 0.4s; }
+        .progress-fill.warning { background: var(--warning-color); }
+        .progress-fill.danger { background: var(--danger-color); }
+        .section { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 20px; }
+        .section-title { font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        .section-title i { color: var(--primary-color); }
+        .provider-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+        .provider-row:last-child { border-bottom: none; padding-bottom: 0; }
+        .provider-name { font-weight: 600; font-size: 14px; color: var(--text-primary); width: 140px; flex-shrink: 0; }
+        .key-input-wrap { flex: 1; position: relative; }
+        .key-input { width: 100%; box-sizing: border-box; padding: 8px 36px 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); font-size: 13px; font-family: monospace; outline: none; transition: border-color 0.2s; }
+        .key-input:focus { border-color: var(--primary-color); }
+        .key-status { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: var(--border-color); }
+        .key-status.has-key { background: var(--success-color); }
+        .btn-save { padding: 8px 16px; background: var(--primary-color); color: #fff; border: none; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: opacity 0.2s; }
+        .btn-save:hover { opacity: 0.85; }
+        .alert { padding: 10px 14px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 16px; display: none; }
+        .alert.error { background: rgba(239,68,68,0.1); color: var(--danger-color); }
+        .alert.success { background: rgba(16,185,129,0.1); color: var(--success-color); }
+        .endpoint-box { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px 16px; font-family: monospace; font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+        .endpoint-text { flex: 1; word-break: break-all; }
+        .btn-copy { padding: 4px 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-primary); color: var(--text-secondary); font-size: 12px; cursor: pointer; white-space: nowrap; }
+        .btn-copy:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .pw-form { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+        .pw-form input { flex: 1; min-width: 160px; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); font-size: 13px; outline: none; }
+        .pw-form input:focus { border-color: var(--primary-color); }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr 1fr; } .provider-row { flex-wrap: wrap; } .provider-name { width: 100%; } }
+    </style>
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="navbar-inner">
+        <div class="brand"><i class="fas fa-user-circle"></i> 我的用户中心</div>
+        <div class="nav-right">
+            <span class="username-badge" id="usernameDisplay">加载中...</span>
+            <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> 退出</button>
+        </div>
+    </div>
+</nav>
+
+<div class="main">
+    <div id="globalAlert" class="alert"></div>
+
+    <!-- 用量统计 -->
+    <div class="grid">
+        <div class="stat-card">
+            <div class="stat-label">今日用量</div>
+            <div class="stat-value" id="todayUsage">-</div>
+            <div class="stat-sub">/ <span id="dailyLimit">-</span> 次</div>
+            <div class="progress-bar"><div class="progress-fill" id="usageBar" style="width:0%"></div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">总用量</div>
+            <div class="stat-value" id="totalUsage">-</div>
+            <div class="stat-sub">累计请求次数</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">最近使用</div>
+            <div class="stat-value" style="font-size:16px;margin-top:10px;" id="lastUsed">-</div>
+        </div>
+    </div>
+
+    <!-- API Key 管理 -->
+    <div class="section">
+        <div class="section-title"><i class="fas fa-key"></i> 我的 API Keys</div>
+        <p style="font-size:13px;color:var(--text-secondary);margin:-12px 0 16px;">填写你自己的真实 API Key，发送请求时将自动使用对应的 Key。</p>
+        <div id="providerList">
+            <!-- 动态生成 -->
+        </div>
+    </div>
+
+    <!-- 接入端点 -->
+    <div class="section">
+        <div class="section-title"><i class="fas fa-plug"></i> 接入端点</div>
+        <p style="font-size:13px;color:var(--text-secondary);margin:-12px 0 16px;">在你的客户端中填写以下信息，即可通过本服务中转请求。</p>
+        <div style="margin-bottom: 10px;">
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:6px;font-weight:600;">Base URL</div>
+            <div class="endpoint-box">
+                <span class="endpoint-text" id="baseUrl"></span>
+                <button class="btn-copy" onclick="copy(document.getElementById('baseUrl').textContent)">复制</button>
+            </div>
+        </div>
+        <div>
+            <div style="font-size:12px;color:var(--text-muted);margin:14px 0 6px;font-weight:600;">认证方式</div>
+            <div style="font-size:13px;color:var(--text-secondary);">在请求头中加入 <code style="background:var(--bg-secondary);padding:2px 6px;border-radius:4px;font-family:monospace;">x-uak-token: &lt;你的登录token&gt;</code></div>
+            <div class="endpoint-box" style="margin-top:8px;">
+                <span class="endpoint-text" id="myToken" style="font-family:monospace;font-size:12px;"></span>
+                <button class="btn-copy" onclick="copy(document.getElementById('myToken').textContent)">复制</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 修改密码 -->
+    <div class="section">
+        <div class="section-title"><i class="fas fa-lock"></i> 修改密码</div>
+        <div class="pw-form">
+            <input type="password" id="oldPwd" placeholder="当前密码">
+            <input type="password" id="newPwd" placeholder="新密码（至少6位）">
+            <input type="password" id="confirmPwd" placeholder="确认新密码">
+            <button class="btn-save" onclick="changePassword()">更新密码</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const TOKEN = localStorage.getItem('uak_token');
+if (!TOKEN) window.location.href = '/user-login.html';
+
+const PROVIDERS = [
+    { id: 'claude-custom', name: 'Claude (自定义)' },
+    { id: 'openai-custom', name: 'OpenAI (自定义)' },
+    { id: 'gemini-cli', name: 'Gemini CLI OAuth' },
+    { id: 'claude-kiro', name: 'Claude Kiro OAuth' },
+    { id: 'grok', name: 'Grok Reverse' },
+];
+
+let userData = null;
+
+function showAlert(msg, type = 'error') {
+    const el = document.getElementById('globalAlert');
+    el.textContent = msg;
+    el.className = 'alert ' + type;
+    el.style.display = msg ? 'block' : 'none';
+}
+
+async function loadMe() {
+    try {
+        const res = await fetch('/api/uak/me', { headers: { Authorization: 'Bearer ' + TOKEN } });
+        if (res.status === 401) { localStorage.clear(); window.location.href = '/user-login.html'; return; }
+        const data = await res.json();
+        if (!data.success) return;
+
+        userData = data.user;
+        document.getElementById('usernameDisplay').textContent = userData.username;
+        document.getElementById('todayUsage').textContent = userData.todayUsage;
+        document.getElementById('dailyLimit').textContent = userData.dailyLimit > 0 ? userData.dailyLimit : '无限';
+        document.getElementById('totalUsage').textContent = userData.totalUsage;
+        document.getElementById('lastUsed').textContent = userData.lastUsedAt
+            ? new Date(userData.lastUsedAt).toLocaleString('zh-CN')
+            : '暂无记录';
+
+        // 进度条
+        const pct = userData.dailyLimit > 0 ? Math.min(100, (userData.todayUsage / userData.dailyLimit) * 100) : 0;
+        const bar = document.getElementById('usageBar');
+        bar.style.width = pct + '%';
+        bar.className = 'progress-fill' + (pct >= 90 ? ' danger' : pct >= 70 ? ' warning' : '');
+
+        // 渲染 Provider 列表
+        renderProviders(data.user.apiKeysMasked || {});
+
+        document.getElementById('baseUrl').textContent = window.location.origin;
+        document.getElementById('myToken').textContent = TOKEN;
+    } catch (e) {
+        showAlert('加载失败，请刷新重试');
+    }
+}
+
+function renderProviders(maskedKeys) {
+    const container = document.getElementById('providerList');
+    container.innerHTML = PROVIDERS.map(p => {
+        const hasMasked = maskedKeys[p.id];
+        return `
+        <div class="provider-row">
+            <div class="provider-name">${p.name}</div>
+            <div class="key-status ${hasMasked ? 'has-key' : ''}" id="status_${p.id}" title="${hasMasked ? '已配置' : '未配置'}"></div>
+            <div class="key-input-wrap">
+                <input class="key-input" id="key_${p.id}" type="password"
+                    placeholder="${hasMasked ? '已配置（输入新值以替换）' : '粘贴你的 API Key'}"
+                    autocomplete="off">
+            </div>
+            <button class="btn-save" onclick="saveKey('${p.id}')">保存</button>
+        </div>`;
+    }).join('');
+}
+
+async function saveKey(provider) {
+    const input = document.getElementById('key_' + provider);
+    const apiKey = input.value.trim();
+    if (!apiKey) { showAlert('请输入 API Key'); return; }
+
+    try {
+        const res = await fetch('/api/uak/my-apikey', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN },
+            body: JSON.stringify({ provider, apiKey })
+        });
+        const data = await res.json();
+        if (data.success) {
+            input.value = '';
+            input.placeholder = '已配置（输入新值以替换）';
+            document.getElementById('status_' + provider).className = 'key-status has-key';
+            showAlert('API Key 已保存', 'success');
+        } else {
+            showAlert(data.message || '保存失败');
+        }
+    } catch (e) { showAlert('网络错误'); }
+}
+
+async function changePassword() {
+    const old = document.getElementById('oldPwd').value;
+    const nw = document.getElementById('newPwd').value;
+    const confirm = document.getElementById('confirmPwd').value;
+    if (!old || !nw) return showAlert('请填写原密码和新密码');
+    if (nw !== confirm) return showAlert('两次输入的新密码不一致');
+
+    try {
+        const res = await fetch('/api/uak/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN },
+            body: JSON.stringify({ oldPassword: old, newPassword: nw })
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert('密码已更新，请重新登录', 'success');
+            setTimeout(logout, 1500);
+        } else {
+            showAlert(data.message || '修改失败');
+        }
+    } catch (e) { showAlert('网络错误'); }
+}
+
+function copy(text) {
+    navigator.clipboard.writeText(text).then(() => showAlert('已复制到剪贴板', 'success'));
+}
+
+async function logout() {
+    await fetch('/api/uak/logout', { method: 'POST', headers: { Authorization: 'Bearer ' + TOKEN } });
+    localStorage.clear();
+    document.cookie = 'uak_token=; max-age=0; path=/';
+    window.location.href = '/user-login.html';
+}
+
+loadMe();
+</script>
+</body>
+</html>
