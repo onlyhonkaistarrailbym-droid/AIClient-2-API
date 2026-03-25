@@ -1,14 +1,12 @@
 /**
  * 用户 API Key 插件
- * 
- * 功能：
+ * * 功能：
  * 1. 用户注册/登录（各自账号密码）
  * 2. 每个用户保存自己的真实 API Key
  * 3. 请求时自动使用该用户的 API Key 转发
  * 4. 每日请求额度限制
  * 5. 管理员可管理所有用户
- * 
- * 前端页面：
+ * * 前端页面：
  * - /user-login.html   — 用户登录/注册
  * - /user-portal.html  — 用户个人中心（填 API Key、查用量）
  * - /user-admin.html   — 管理员用户管理
@@ -40,12 +38,18 @@ const userApiKeyPlugin = {
 
     staticPaths: ['user-login.html', 'user-portal.html', 'user-admin.html'],
 
+    // 【修复路由匹配】兼容不同代理版本的正则与绝对路径匹配
     routes: [
-        {
-            method: '*',
-            path: '/api/uak',
-            handler: handleUserApiKeyRoutes,
-        }
+        { method: '*', path: /^\/api\/uak(\/.*)?$/, handler: handleUserApiKeyRoutes },
+        // 兜底方案，防止代理核心不支持正则
+        { method: 'POST', path: '/api/uak/register', handler: handleUserApiKeyRoutes },
+        { method: 'POST', path: '/api/uak/login', handler: handleUserApiKeyRoutes },
+        { method: 'POST', path: '/api/uak/logout', handler: handleUserApiKeyRoutes },
+        { method: 'GET', path: '/api/uak/me', handler: handleUserApiKeyRoutes },
+        { method: 'POST', path: '/api/uak/change-password', handler: handleUserApiKeyRoutes },
+        { method: 'PUT', path: '/api/uak/my-apikey', handler: handleUserApiKeyRoutes },
+        { method: 'GET', path: '/api/uak/admin/users', handler: handleUserApiKeyRoutes },
+        { method: 'GET', path: '/api/uak/admin/stats', handler: handleUserApiKeyRoutes }
     ],
 
     /**
