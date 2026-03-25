@@ -796,6 +796,83 @@ export async function handleUnaryRequest(res, service, model, requestBody, fromP
 }
 
 /**
+ * 夜划Ngt: 给模型列表中的每个模型 ID 附加渠道后缀标签。
+ * 标签规则（可在此处自定义）：
+ *   gemini-antigravity  → [Ngt-AG]
+ *   gemini-cli-oauth    → [Ngt-CLI]
+ *   claude-kiro-oauth   → [Ngt-Kiro]
+ *   其他渠道            → 不加后缀
+ *
+ * 若环境变量 NGT_MODEL_LABELS=false，则禁用该功能。
+ */
+function appendNgtModelLabels(modelList, CONFIG, endpointType) {
+    // 允许通过环境变量关闭
+    if (process.env.NGT_MODEL_LABELS === 'false') return modelList;
+
+    // 渠道 → 标签映射（可自由增删）
+    const PROVIDER_LABELS = {
+        'gemini-antigravity':  '[Ngt-AG]',
+        'gemini-cli-oauth':    '[Ngt-CLI]',
+        'claude-kiro-oauth':   '[Ngt-Kiro]',
+    };
+
+    const provider = CONFIG.MODEL_PROVIDER;
+
+    // AUTO 模式：每个模型 ID 已经是 "providerType:modelName" 格式，逐个处理
+    if (provider === 'auto') {
+        const addLabelToId = (id) => {
+            const colonIdx = id.indexOf(':');
+            if (colonIdx === -1) return id;
+            const pType = id.slice(0, colonIdx);
+            const mName = id.slice(colonIdx + 1);
+            const label = PROVIDER_LABELS[pType];
+            return label ? `${mName}${label}` : id;
+        };
+
+        if (endpointType === ENDPOINT_TYPE.OPENAI_MODEL_LIST && modelList && Array.isArray(modelList.data)) {
+            return {
+                ...modelList,
+                data: modelList.data.map(m => ({ ...m, id: addLabelToId(m.id) }))
+            };
+        }
+        if (endpointType === ENDPOINT_TYPE.GEMINI_MODEL_LIST && modelList && Array.isArray(modelList.models)) {
+            return {
+                ...modelList,
+                models: modelList.models.map(m => {
+                    const rawId = m.name.replace(/^models\//, '');
+                    const newId = addLabelToId(rawId);
+                    return { ...m, name: `models/${newId}`, displayName: newId };
+                })
+            };
+        }
+        return modelList;
+    }
+
+    // 单提供商模式
+    const label = PROVIDER_LABELS[provider];
+    if (!label) return modelList; // 该渠道不需要标签
+
+    if (endpointType === ENDPOINT_TYPE.OPENAI_MODEL_LIST && modelList && Array.isArray(modelList.data)) {
+        return {
+            ...modelList,
+            data: modelList.data.map(m => ({ ...m, id: `${m.id}${label}` }))
+        };
+    }
+    if (endpointType === ENDPOINT_TYPE.GEMINI_MODEL_LIST && modelList && Array.isArray(modelList.models)) {
+        return {
+            ...modelList,
+            models: modelList.models.map(m => {
+                const rawId = m.name.replace(/^models\//, '');
+                const newId = `${rawId}${label}`;
+                return { ...m, name: `models/${newId}`, displayName: newId };
+            })
+        };
+    }
+
+    return modelList;
+}
+
+/**
  * Handles requests for listing available models. It fetches models from the
  * service, transforms them to the format expected by the client (OpenAI, Claude, etc.),
  * and sends the JSON response.
@@ -853,6 +930,9 @@ export async function handleModelListRequest(req, res, service, endpointType, CO
                 logger.info(`[ModelList Convert] Model list format matches. No conversion needed.`);
             }
         }
+
+        // --- 夜划Ngt: 给模型名加渠道后缀标签 ---
+        clientModelList = appendNgtModelLabels(clientModelList, CONFIG, endpointType);
 
         // logger.info(`[ModelList Response] Sending model list to client: ${JSON.stringify(clientModelList)}`);
         res.writeHead(200, { 'Content-Type': 'application/json' });
