@@ -796,20 +796,11 @@ export async function handleUnaryRequest(res, service, model, requestBody, fromP
 }
 
 /**
- * 夜划Ngt: 给模型列表中的每个模型 ID 附加渠道后缀标签。
- * 标签规则（可在此处自定义）：
- * gemini-antigravity  → [Ngt-AG]
- * gemini-cli-oauth    → [Ngt-CLI]
- * claude-kiro-oauth   → [Ngt-Kiro]
- * 其他渠道            → 不加后缀
- *
- * 若环境变量 NGT_MODEL_LABELS=false，则禁用该功能。
+ * 夜划Ngt: 给模型列表附加标签，并【强制注入】隐藏的高级模型
  */
 function appendNgtModelLabels(modelList, CONFIG, endpointType) {
-    // 允许通过环境变量关闭
     if (process.env.NGT_MODEL_LABELS === 'false') return modelList;
 
-    // 渠道 → 标签映射（可自由增删）
     const PROVIDER_LABELS = {
         'gemini-antigravity':  '[Ngt-AG]',
         'gemini-cli-oauth':    '[Ngt-CLI]',
@@ -818,29 +809,33 @@ function appendNgtModelLabels(modelList, CONFIG, endpointType) {
 
     const provider = CONFIG.MODEL_PROVIDER;
 
-    // 辅助函数：去掉 provider 冒号前缀
     const cleanId = (id) => {
         const colonIdx = id.indexOf(':');
         return colonIdx !== -1 ? id.slice(colonIdx + 1) : id;
     };
 
+    // 【核心修改】不论上游下不下发，强制把这些模型写入下拉列表，专治酒馆不显示问题！
+    const FORCE_INJECT_MODELS = [
+        'gemini-claude-opus-4-6-thinking',
+        'gemini-claude-sonnet-4-6'
+    ];
+
     if (endpointType === ENDPOINT_TYPE.OPENAI_MODEL_LIST && modelList && Array.isArray(modelList.data)) {
         let expandedData = [];
         const seenIds = new Set();
 
+        // 1. 处理原本的模型列表
         modelList.data.forEach(m => {
             const baseId = cleanId(m.id);
             const originalPType = m.id.indexOf(':') !== -1 ? m.id.split(':')[0] : provider;
             let originalLabel = PROVIDER_LABELS[originalPType] || '';
 
-            // 1. 添加当前渠道本该有的标签模型
             const labeledId = `${baseId}${originalLabel}`;
             if (!seenIds.has(labeledId)) {
                 expandedData.push({ ...m, id: labeledId });
                 seenIds.add(labeledId);
             }
 
-            // 2. 核心修改：如果是 Gemini 模型，强制分裂出 AG 和 CLI 两个选项，实现同显
             if (baseId.startsWith('gemini-')) {
                 const agId = `${baseId}[Ngt-AG]`;
                 const cliId = `${baseId}[Ngt-CLI]`;
@@ -853,7 +848,6 @@ function appendNgtModelLabels(modelList, CONFIG, endpointType) {
                     seenIds.add(cliId);
                 }
             }
-            // Claude 同理
             if (baseId.startsWith('claude-')) {
                 const kiroId = `${baseId}[Ngt-Kiro]`;
                 if (!seenIds.has(kiroId)) {
@@ -862,6 +856,24 @@ function appendNgtModelLabels(modelList, CONFIG, endpointType) {
                 }
             }
         });
+
+        // 2. 强行注入 Claude 隐藏模型并打上标签
+        FORCE_INJECT_MODELS.forEach(mName => {
+            const injectedId = `${mName}[Ngt-AG]`;
+            if (!seenIds.has(injectedId)) {
+                expandedData.push({
+                    id: injectedId,
+                    object: 'model',
+                    created: Math.floor(Date.now() / 1000),
+                    owned_by: 'antigravity'
+                });
+                seenIds.add(injectedId);
+            }
+        });
+
+        // 3. 将所有模型按字母A-Z进行排序
+        expandedData.sort((a, b) => a.id.localeCompare(b.id));
+
         return { ...modelList, data: expandedData };
     }
 
@@ -889,6 +901,23 @@ function appendNgtModelLabels(modelList, CONFIG, endpointType) {
                 addModel('[Ngt-CLI]');
             }
         });
+
+        // 在 Gemini 端点同样强制注入
+        FORCE_INJECT_MODELS.forEach(mName => {
+            const injectedId = `${mName}[Ngt-AG]`;
+            if (!seenIds.has(injectedId)) {
+                expandedModels.push({
+                    name: `models/${injectedId}`,
+                    displayName: injectedId,
+                    description: 'Forced Inject Ngt Model'
+                });
+                seenIds.add(injectedId);
+            }
+        });
+        
+        // 同样字母排序
+        expandedModels.sort((a, b) => a.displayName.localeCompare(b.displayName));
+
         return { ...modelList, models: expandedModels };
     }
 
@@ -954,7 +983,7 @@ export async function handleModelListRequest(req, res, service, endpointType, CO
             }
         }
 
-        // --- 夜划Ngt: 给模型名加渠道后缀标签 ---
+        // --- 夜划Ngt: 给模型名加渠道后缀标签 (这里包含注入和排序逻辑) ---
         clientModelList = appendNgtModelLabels(clientModelList, CONFIG, endpointType);
 
         // logger.info(`[ModelList Response] Sending model list to client: ${JSON.stringify(clientModelList)}`);
