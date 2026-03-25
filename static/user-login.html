@@ -107,7 +107,11 @@
             });
             const data = await res.json();
 
-            if (!data.success) return showAlert(data.message || '操作失败');
+            // 【提取精确报错】防止静默为 "操作失败"
+            if (!data.success) {
+                const errMsg = data.message || (data.error && data.error.message) || '操作失败';
+                return showAlert(errMsg);
+            }
 
             if (mode === 'register') {
                 showAlert('注册成功！请登录', 'success');
@@ -128,7 +132,7 @@
                 window.location.href = '/user-portal.html';
             }
         } catch (e) {
-            showAlert('网络错误，请重试');
+            showAlert('网络错误或 JSON 解析失败，请重试');
         }
     }
 
