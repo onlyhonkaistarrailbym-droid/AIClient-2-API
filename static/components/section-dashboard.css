@@ -772,3 +772,19 @@
 [data-theme="dark"] .image-zoom-overlay {
     background: var(--neutral-shadow-95);
 }
+
+/* ── 夜划Ngt 信息卡片补丁 ── */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.ngt-info-card {
+  padding: 18px 20px;
+  border-radius: 10px;
+}
+
+@media (max-width: 600px) {
+  .contact-grid { grid-template-columns: 1fr; }
+}

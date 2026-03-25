@@ -1,0 +1,664 @@
+/* =====================================================
+   夜划Ngt — 完整深夜蓝紫主题
+   覆盖所有原始样式，打造专属界面
+   ===================================================== */
+
+/* ── 字体 ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ── 全局颜色变量 ── */
+:root {
+  --ngt-bg:          #080910;
+  --ngt-bg-card:     #0e1022;
+  --ngt-bg-sidebar:  #090b1a;
+  --ngt-bg-hover:    #131628;
+  --ngt-accent:      #7c6af7;
+  --ngt-accent-dim:  #5b4fcf;
+  --ngt-accent-glow: rgba(124,106,247,0.25);
+  --ngt-blue:        #4fb3e8;
+  --ngt-blue-dim:    rgba(79,179,232,0.15);
+  --ngt-text:        #d4d6f0;
+  --ngt-text-muted:  #6b6d8e;
+  --ngt-border:      rgba(124,106,247,0.14);
+  --ngt-success:     #4ade80;
+  --ngt-danger:      #f87171;
+  --ngt-warning:     #fbbf24;
+  --ngt-radius:      10px;
+  --ngt-radius-sm:   6px;
+}
+
+/* ── 基础重置 ── */
+*, *::before, *::after { box-sizing: border-box; }
+
+body, html {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+  background: var(--ngt-bg) !important;
+  color: var(--ngt-text) !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── 滚动条 ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(124,106,247,0.3); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ngt-accent); }
+
+/* ═══════════════════════════════════════
+   HEADER
+═══════════════════════════════════════ */
+.header {
+  background: linear-gradient(90deg, var(--ngt-bg-sidebar) 0%, rgba(80,65,180,0.1) 100%) !important;
+  border-bottom: 1px solid var(--ngt-border) !important;
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header h1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ngt-logo-icon {
+  font-size: 1.3em;
+  background: linear-gradient(135deg, var(--ngt-accent), var(--ngt-blue));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: ngt-pulse 3s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes ngt-pulse {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(124,106,247,0.4)); }
+  50%       { filter: drop-shadow(0 0 12px rgba(124,106,247,0.8)); }
+}
+
+.ngt-brand, .header-title {
+  background: linear-gradient(135deg, var(--ngt-accent) 0%, var(--ngt-blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* ── Header buttons ── */
+.header-controls .logout-btn,
+.header-controls .theme-toggle {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid var(--ngt-border) !important;
+  color: var(--ngt-text-muted) !important;
+  border-radius: var(--ngt-radius-sm) !important;
+  transition: all 0.2s ease !important;
+}
+.header-controls .logout-btn:hover,
+.header-controls .theme-toggle:hover {
+  background: var(--ngt-accent-glow) !important;
+  border-color: var(--ngt-accent) !important;
+  color: var(--ngt-accent) !important;
+}
+
+.status-badge {
+  background: rgba(74,222,128,0.1) !important;
+  border: 1px solid rgba(74,222,128,0.25) !important;
+  color: var(--ngt-success) !important;
+  border-radius: 99px !important;
+  font-size: 12px !important;
+  padding: 4px 12px !important;
+}
+
+/* 隐藏原作者购买链接（如果残留） */
+.kiro-buy-link { display: none !important; }
+
+/* ═══════════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════════ */
+.sidebar,
+nav.sidebar {
+  background: var(--ngt-bg-sidebar) !important;
+  border-right: 1px solid var(--ngt-border) !important;
+}
+
+.nav-item, .sidebar-item, .nav-link {
+  color: var(--ngt-text-muted) !important;
+  border-radius: var(--ngt-radius-sm) !important;
+  transition: all 0.18s ease !important;
+  margin: 2px 6px !important;
+}
+
+.nav-item:hover, .nav-link:hover {
+  background: rgba(124,106,247,0.08) !important;
+  color: var(--ngt-text) !important;
+}
+
+.nav-item.active, .nav-link.active, .sidebar-item.active {
+  background: rgba(124,106,247,0.15) !important;
+  color: var(--ngt-accent) !important;
+  border-left: 2px solid var(--ngt-accent) !important;
+}
+
+/* ═══════════════════════════════════════
+   MAIN CONTENT
+═══════════════════════════════════════ */
+.content, main, .main-content {
+  background: var(--ngt-bg) !important;
+}
+
+/* Section titles */
+.section h2 {
+  color: var(--ngt-text) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  border-bottom: 1px solid var(--ngt-border) !important;
+  padding-bottom: 12px !important;
+  margin-bottom: 20px !important;
+}
+
+/* ═══════════════════════════════════════
+   CARDS
+═══════════════════════════════════════ */
+.card, .stat-card, .info-card, .contact-card,
+.system-info-panel, .routing-examples-panel,
+.provider-card, .credential-card {
+  background: var(--ngt-bg-card) !important;
+  border: 1px solid var(--ngt-border) !important;
+  border-radius: var(--ngt-radius) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.card:hover, .stat-card:hover, .provider-card:hover {
+  border-color: rgba(124,106,247,0.35) !important;
+  box-shadow: 0 4px 24px rgba(124,106,247,0.1) !important;
+}
+
+/* ── 夜划Ngt 自定义信息卡片 ── */
+.ngt-info-card {
+  background: linear-gradient(135deg, rgba(124,106,247,0.06) 0%, rgba(79,179,232,0.04) 100%) !important;
+  border: 1px solid rgba(124,106,247,0.2) !important;
+  padding: 18px 20px !important;
+}
+
+.ngt-info-card h3 {
+  color: var(--ngt-accent) !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  margin-bottom: 12px !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ngt-info-body { display: flex; flex-direction: column; gap: 8px; }
+
+.ngt-info-line {
+  font-size: 13px !important;
+  color: var(--ngt-text-muted) !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 !important;
+}
+
+.ngt-info-line i { color: var(--ngt-accent); width: 14px; text-align: center; }
+.ngt-info-line code {
+  font-size: 11px !important;
+  background: rgba(124,106,247,0.12) !important;
+  color: var(--ngt-blue) !important;
+  padding: 1px 6px !important;
+  border-radius: 4px !important;
+  font-family: 'Courier New', monospace !important;
+}
+
+/* Stat card icons */
+.stat-icon {
+  background: rgba(124,106,247,0.12) !important;
+  color: var(--ngt-accent) !important;
+  border-radius: 8px !important;
+}
+
+/* ═══════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════ */
+.btn, button.btn {
+  border-radius: var(--ngt-radius-sm) !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-primary, .btn.btn-primary {
+  background: var(--ngt-accent) !important;
+  border-color: var(--ngt-accent) !important;
+  color: #fff !important;
+}
+.btn-primary:hover {
+  background: var(--ngt-accent-dim) !important;
+  box-shadow: 0 0 16px var(--ngt-accent-glow) !important;
+}
+
+.btn-outline, .btn.btn-outline {
+  background: transparent !important;
+  border: 1px solid var(--ngt-border) !important;
+  color: var(--ngt-text-muted) !important;
+}
+.btn-outline:hover {
+  border-color: var(--ngt-accent) !important;
+  color: var(--ngt-accent) !important;
+  background: var(--ngt-accent-glow) !important;
+}
+
+.btn-success {
+  background: #16a34a !important;
+  border-color: #16a34a !important;
+}
+
+.btn-danger {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+}
+
+/* ═══════════════════════════════════════
+   FORMS / INPUTS
+═══════════════════════════════════════ */
+input, textarea, select,
+.form-control, .form-input {
+  background: rgba(255,255,255,0.03) !important;
+  border: 1px solid var(--ngt-border) !important;
+  color: var(--ngt-text) !important;
+  border-radius: var(--ngt-radius-sm) !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+input:focus, textarea:focus, select:focus,
+.form-control:focus {
+  border-color: var(--ngt-accent) !important;
+  box-shadow: 0 0 0 3px rgba(124,106,247,0.15) !important;
+  outline: none !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--ngt-text-muted) !important;
+}
+
+select option {
+  background: var(--ngt-bg-card) !important;
+  color: var(--ngt-text) !important;
+}
+
+label, .form-label {
+  color: var(--ngt-text-muted) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+
+/* ═══════════════════════════════════════
+   TABLES
+═══════════════════════════════════════ */
+table, .table {
+  background: var(--ngt-bg-card) !important;
+  border-radius: var(--ngt-radius) !important;
+  overflow: hidden;
+}
+
+th {
+  background: rgba(124,106,247,0.07) !important;
+  color: var(--ngt-text-muted) !important;
+  font-weight: 600 !important;
+  font-size: 12px !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--ngt-border) !important;
+}
+
+td {
+  border-bottom: 1px solid rgba(124,106,247,0.06) !important;
+  color: var(--ngt-text) !important;
+}
+
+tr:hover td {
+  background: rgba(124,106,247,0.04) !important;
+}
+
+/* ═══════════════════════════════════════
+   BADGES / TAGS
+═══════════════════════════════════════ */
+.badge, .tag {
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  border-radius: 99px !important;
+  padding: 2px 8px !important;
+}
+
+.badge-success, .tag-success {
+  background: rgba(74,222,128,0.12) !important;
+  color: var(--ngt-success) !important;
+  border: 1px solid rgba(74,222,128,0.25) !important;
+}
+
+.badge-danger, .tag-danger {
+  background: rgba(248,113,113,0.12) !important;
+  color: var(--ngt-danger) !important;
+  border: 1px solid rgba(248,113,113,0.25) !important;
+}
+
+.badge-warning, .tag-warning {
+  background: rgba(251,191,36,0.12) !important;
+  color: var(--ngt-warning) !important;
+  border: 1px solid rgba(251,191,36,0.25) !important;
+}
+
+/* Provider type badges */
+.provider-type-badge, .channel-badge {
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  border-radius: 99px !important;
+  padding: 2px 8px !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* CLI 渠道 */
+[class*="cli"], .badge-cli {
+  background: var(--ngt-blue-dim) !important;
+  color: var(--ngt-blue) !important;
+  border: 1px solid rgba(79,179,232,0.3) !important;
+}
+
+/* Antigravity 渠道 */
+[class*="antigravity"], [class*="anti-gravity"], .badge-ag {
+  background: rgba(124,106,247,0.12) !important;
+  color: var(--ngt-accent) !important;
+  border: 1px solid rgba(124,106,247,0.3) !important;
+}
+
+/* Kiro / Claude 渠道 */
+[class*="kiro"], [class*="claude"], .badge-kiro {
+  background: rgba(248,113,113,0.1) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(248,113,113,0.25) !important;
+}
+
+/* ═══════════════════════════════════════
+   PROGRESS BARS
+═══════════════════════════════════════ */
+.progress-bar, progress {
+  background: rgba(255,255,255,0.05) !important;
+  border-radius: 99px !important;
+  overflow: hidden;
+}
+
+.progress-bar-fill, .progress-fill,
+progress::-webkit-progress-value {
+  background: linear-gradient(90deg, var(--ngt-accent), var(--ngt-blue)) !important;
+  border-radius: 99px !important;
+}
+
+/* ═══════════════════════════════════════
+   MODALS / DIALOGS
+═══════════════════════════════════════ */
+.modal, .dialog, .overlay-panel {
+  background: var(--ngt-bg-card) !important;
+  border: 1px solid var(--ngt-border) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,106,247,0.1) !important;
+}
+
+.modal-header, .dialog-header {
+  border-bottom: 1px solid var(--ngt-border) !important;
+}
+
+.modal-footer, .dialog-footer {
+  border-top: 1px solid var(--ngt-border) !important;
+}
+
+.modal-overlay, .dialog-overlay {
+  background: rgba(0,0,0,0.65) !important;
+  backdrop-filter: blur(4px);
+}
+
+/* ═══════════════════════════════════════
+   LOGIN PAGE
+═══════════════════════════════════════ */
+.login-container {
+  background: var(--ngt-bg) !important;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-box, .login-card, .login-form {
+  background: var(--ngt-bg-card) !important;
+  border: 1px solid var(--ngt-border) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 0 60px rgba(124,106,247,0.12) !important;
+  padding: 36px !important;
+  min-width: 360px;
+}
+
+/* ═══════════════════════════════════════
+   CODE / PRE
+═══════════════════════════════════════ */
+code, pre {
+  background: rgba(124,106,247,0.08) !important;
+  color: var(--ngt-blue) !important;
+  border-radius: 4px !important;
+  font-family: 'Courier New', Consolas, monospace !important;
+}
+
+pre {
+  padding: 14px !important;
+  border: 1px solid var(--ngt-border) !important;
+  overflow-x: auto;
+}
+
+/* ═══════════════════════════════════════
+   SYSTEM INFO PANEL
+═══════════════════════════════════════ */
+.system-info-panel {
+  padding: 20px !important;
+  margin-bottom: 20px !important;
+}
+
+.system-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--ngt-border) !important;
+}
+
+.system-info-header h3 {
+  color: var(--ngt-text) !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.info-item {
+  background: rgba(124,106,247,0.04) !important;
+  border: 1px solid rgba(124,106,247,0.08) !important;
+  border-radius: var(--ngt-radius-sm) !important;
+  padding: 12px !important;
+}
+
+.info-label {
+  font-size: 11px !important;
+  color: var(--ngt-text-muted) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.info-label i { color: var(--ngt-accent); }
+
+.info-value {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--ngt-text) !important;
+}
+
+/* ═══════════════════════════════════════
+   ROUTING EXAMPLES PANEL
+═══════════════════════════════════════ */
+.routing-examples-panel {
+  padding: 20px !important;
+  margin-bottom: 20px !important;
+}
+
+.routing-examples-panel h3 {
+  color: var(--ngt-text) !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  margin-bottom: 6px !important;
+}
+
+.routing-description {
+  color: var(--ngt-text-muted) !important;
+  font-size: 13px !important;
+  margin-bottom: 16px !important;
+}
+
+.routing-tips {
+  background: rgba(124,106,247,0.05) !important;
+  border: 1px solid rgba(124,106,247,0.12) !important;
+  border-radius: var(--ngt-radius-sm) !important;
+  padding: 14px !important;
+  margin-top: 16px !important;
+}
+
+.routing-tips h4 {
+  color: var(--ngt-accent) !important;
+  font-size: 13px !important;
+  margin-bottom: 8px !important;
+}
+
+.routing-tips li {
+  color: var(--ngt-text-muted) !important;
+  font-size: 13px !important;
+  margin-bottom: 4px !important;
+  line-height: 1.5;
+}
+
+.routing-tips li strong { color: var(--ngt-text) !important; }
+
+/* ── Highlight note ── */
+.highlight-note {
+  background: rgba(79,179,232,0.07) !important;
+  border: 1px solid rgba(79,179,232,0.2) !important;
+  border-radius: var(--ngt-radius-sm) !important;
+  padding: 8px 12px !important;
+  font-size: 12px !important;
+  color: var(--ngt-blue) !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ═══════════════════════════════════════
+   PROVIDER / CREDENTIAL CARDS
+═══════════════════════════════════════ */
+.provider-card, .credential-card {
+  padding: 16px !important;
+}
+
+.provider-name, .credential-name {
+  font-weight: 600 !important;
+  color: var(--ngt-text) !important;
+}
+
+.provider-status.healthy, .status-healthy {
+  color: var(--ngt-success) !important;
+}
+.provider-status.error, .status-error {
+  color: var(--ngt-danger) !important;
+}
+
+/* ═══════════════════════════════════════
+   LOGS
+═══════════════════════════════════════ */
+.log-container, .logs-panel {
+  background: #050609 !important;
+  border: 1px solid var(--ngt-border) !important;
+  border-radius: var(--ngt-radius) !important;
+  font-family: 'Courier New', monospace !important;
+  font-size: 12px !important;
+}
+
+.log-entry { border-bottom: 1px solid rgba(124,106,247,0.05) !important; }
+.log-info  { color: var(--ngt-blue) !important; }
+.log-error { color: var(--ngt-danger) !important; }
+.log-warn  { color: var(--ngt-warning) !important; }
+.log-success { color: var(--ngt-success) !important; }
+
+/* ═══════════════════════════════════════
+   TOAST NOTIFICATIONS
+═══════════════════════════════════════ */
+.toast, .notification {
+  background: var(--ngt-bg-card) !important;
+  border: 1px solid var(--ngt-border) !important;
+  border-radius: var(--ngt-radius) !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4) !important;
+  color: var(--ngt-text) !important;
+}
+
+.toast-success { border-left: 3px solid var(--ngt-success) !important; }
+.toast-error   { border-left: 3px solid var(--ngt-danger) !important; }
+.toast-warning { border-left: 3px solid var(--ngt-warning) !important; }
+.toast-info    { border-left: 3px solid var(--ngt-accent) !important; }
+
+/* ═══════════════════════════════════════
+   UPDATE BADGE
+═══════════════════════════════════════ */
+.update-badge {
+  background: rgba(251,191,36,0.12) !important;
+  color: var(--ngt-warning) !important;
+  border: 1px solid rgba(251,191,36,0.3) !important;
+  border-radius: 99px !important;
+  font-size: 11px !important;
+  padding: 2px 8px !important;
+}
+
+/* ═══════════════════════════════════════
+   MISC CLEANUP
+═══════════════════════════════════════ */
+
+/* 隐藏原作者赞助/购买二维码（安全网） */
+.contact-section img[src*="wechat"],
+.contact-section img[src*="sponsor"],
+.contact-card img.qr-code,
+img[alt*="二维码"],
+img[alt*="QR"],
+a[href*="hubtoday"],
+a[href*="justlovemaki"] {
+  display: none !important;
+}
+
+/* Dividers */
+hr { border-color: var(--ngt-border) !important; }
+
+/* Selection */
+::selection {
+  background: rgba(124,106,247,0.3) !important;
+  color: #fff !important;
+}
+
+/* Links */
+a { color: var(--ngt-blue) !important; }
+a:hover { color: var(--ngt-accent) !important; }
+
+/* 章节标题小图标 */
+.section h3 i, .panel-title i {
+  color: var(--ngt-accent) !important;
+}
