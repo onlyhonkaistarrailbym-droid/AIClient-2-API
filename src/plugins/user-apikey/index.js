@@ -24,7 +24,8 @@ const userApiKeyPlugin = {
     description: '用户自带 API Key 插件 — 用户注册登录并填写自己的 API Key，支持每日额度限制<br>登录页：<a href="user-login.html" target="_blank">user-login.html</a><br>用户中心：<a href="user-portal.html" target="_blank">user-portal.html</a><br>管理员：<a href="user-admin.html" target="_blank">user-admin.html</a>',
 
     type: 'auth',
-    _priority: 8, // 比 api-potluck (10) 更早执行
+    // 设置最高优先级（数字小/或者极端大视代理框架而定），确保在 api-potluck 之前执行
+    _priority: 1, 
 
     async init(config) {
         _config = config;
@@ -38,10 +39,8 @@ const userApiKeyPlugin = {
 
     staticPaths: ['user-login.html', 'user-portal.html', 'user-admin.html'],
 
-    // 【修复路由匹配】兼容不同代理版本的正则与绝对路径匹配
     routes: [
         { method: '*', path: /^\/api\/uak(\/.*)?$/, handler: handleUserApiKeyRoutes },
-        // 兜底方案，防止代理核心不支持正则
         { method: 'POST', path: '/api/uak/register', handler: handleUserApiKeyRoutes },
         { method: 'POST', path: '/api/uak/login', handler: handleUserApiKeyRoutes },
         { method: 'POST', path: '/api/uak/logout', handler: handleUserApiKeyRoutes },
@@ -53,10 +52,16 @@ const userApiKeyPlugin = {
     ],
 
     /**
-     * 认证方法 — 从请求头提取用户 token，验证身份，
-     * 并将用户自己的真实 API Key 注入到 config 中供后续使用
+     * 认证方法
      */
     async authenticate(req, res, requestUrl, config) {
+        // 【核心修复】发放免死金牌：如果是本插件负责的前后端 API 交互请求
+        // 直接返回 authorized: true 授权通过！
+        // 防止请求流转到下方的 api-potluck 等插件时，因为没有大模型 token 而被误杀拦截。
+        if (requestUrl.pathname.startsWith('/api/uak')) {
+            return { handled: false, authorized: true };
+        }
+
         // 优先从 x-uak-token 头获取，也支持 cookie
         const uakToken = req.headers['x-uak-token']
             || parseCookieToken(req.headers['cookie']);
@@ -84,7 +89,6 @@ const userApiKeyPlugin = {
         }
 
         // 获取该用户保存的真实 API Key，注入到 config 中
-        // 优先从请求头 x-uak-provider 获取 provider，否则使用当前配置的 provider
         const provider = req.headers['x-uak-provider'] || config.MODEL_PROVIDER;
         const userKey = getUserApiKey(userInfo.username, provider);
 
