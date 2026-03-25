@@ -2,8 +2,8 @@
 const translations = {
     'zh-CN': {
         // Header
-        'header.title': 'AIClient2API 管理控制台',
-        'header.description': 'AIClient2API 管理控制台 - 统一管理 AI 服务提供商',
+        'header.title': '夜划Ngt 管理控制台',
+        'header.description': '夜划Ngt 管理控制台 - 统一管理 AI 服务提供商',
         'header.github': 'GitHub 仓库',
         'header.themeToggle': '切换主题',
         'header.status.connecting': '连接中...',
@@ -651,7 +651,7 @@ const translations = {
         // Guide
         'guide.title': '使用指南',
         'guide.intro.title': '项目简介',
-        'guide.intro.desc': 'AIClient2API 是一个突破客户端限制的 API 代理服务，将 Gemini、Antigravity、Qwen Code、Kiro 等原本仅限客户端内使用的免费大模型，转换为可供任何应用调用的标准 OpenAI 兼容接口。',
+        'guide.intro.desc': '夜划Ngt 是一个突破客户端限制的 API 代理服务，将 Gemini、Antigravity、Qwen Code、Kiro 等原本仅限客户端内使用的免费大模型，转换为可供任何应用调用的标准 OpenAI 兼容接口。',
         'guide.intro.feature1.title': '统一接入',
         'guide.intro.feature1.desc': '通过标准 OpenAI 兼容协议，一次配置即可接入多种大模型',
         'guide.intro.feature2.title': '突破限制',
@@ -814,7 +814,7 @@ const translations = {
         'common.found': '已找到',
         'common.missing': '缺失',
         'common.search': '搜索',
-        'common.welcome': '欢迎使用AIClient2API管理控制台！',
+        'common.welcome': '欢迎使用夜划Ngt管理控制台！',
         'common.fileType': '不支持的文件类型，请选择 JSON、TXT、KEY、PEM、P12 或 PFX 文件',
         'common.fileSize': '文件大小不能超过 5MB',
         'common.uploadSuccess': '文件上传成功',
@@ -829,7 +829,7 @@ const translations = {
         'common.refresh.failed': '刷新失败',
         
         // Login
-        'login.title': '登录 - AIClient2API',
+        'login.title': '登录 - 夜划Ngt',
         'login.heading': '请登录以继续',
         'login.password': '密码',
         'login.passwordPlaceholder': '请输入密码',
@@ -847,8 +847,8 @@ const translations = {
     },
     'en-US': {
         // Header
-        'header.title': 'AIClient2API Management Console',
-        'header.description': 'AIClient2API Management Console - Unified management of AI service providers',
+        'header.title': '夜划Ngt Management Console',
+        'header.description': '夜划Ngt - Private AI Relay Station',
         'header.github': 'GitHub Repository',
         'header.themeToggle': 'Toggle Theme',
         'header.status.connecting': 'Connecting...',
@@ -1496,7 +1496,7 @@ const translations = {
         // Guide
         'guide.title': 'User Guide',
         'guide.intro.title': 'Introduction',
-        'guide.intro.desc': 'AIClient2API is an API proxy service that breaks client restrictions, converting free large models like Gemini, Antigravity, Qwen Code, and Kiro into standard OpenAI-compatible interfaces that any application can call.',
+        'guide.intro.desc': '夜划Ngt is an API proxy service that breaks client restrictions, converting free large models like Gemini, Antigravity, Qwen Code, and Kiro into standard OpenAI-compatible interfaces that any application can call.',
         'guide.intro.feature1.title': 'Unified Access',
         'guide.intro.feature1.desc': 'Access multiple large models with a single configuration through standard OpenAI-compatible protocol',
         'guide.intro.feature2.title': 'Break Limits',
@@ -1660,7 +1660,7 @@ const translations = {
         'common.found': 'Found',
         'common.missing': 'Missing',
         'common.search': 'Search',
-        'common.welcome': 'Welcome to AIClient2API Management Console!',
+        'common.welcome': 'Welcome to 夜划Ngt Management Console!',
         'common.fileType': 'Unsupported file type. Please select JSON, TXT, KEY, PEM, P12, or PFX.',
         'common.fileSize': 'File size cannot exceed 5MB.',
         'common.uploadSuccess': 'File uploaded successfully',
@@ -1674,7 +1674,7 @@ const translations = {
         'common.refresh.failed': 'Refresh failed',
         
         // Login
-        'login.title': 'Login - AIClient2API',
+        'login.title': 'Login - 夜划Ngt',
         'login.heading': 'Please login to continue',
         'login.password': 'Password',
         'login.passwordPlaceholder': 'Please enter password',
