@@ -1,0 +1,248 @@
+/* =====================================================
+   夜划Ngt — 自定义主题
+   深夜蓝紫色调，带微光效果
+   把此文件复制到 static/app/ngt_theme.css
+   ===================================================== */
+
+/* ── 全局颜色变量覆盖 ── */
+:root {
+  --ngt-bg-deep:     #0a0b14;
+  --ngt-bg-card:     #0f1120;
+  --ngt-bg-sidebar:  #0c0d1a;
+  --ngt-accent:      #7c6af7;      /* 主色：柔紫 */
+  --ngt-accent-glow: #5b4fcf;
+  --ngt-accent2:     #4fb3e8;      /* 副色：冷蓝 */
+  --ngt-text:        #d4d6f0;
+  --ngt-text-muted:  #7b7d9e;
+  --ngt-border:      rgba(124, 106, 247, 0.18);
+  --ngt-success:     #4ade80;
+  --ngt-danger:      #f87171;
+  --ngt-warning:     #fbbf24;
+}
+
+/* ── 背景 ── */
+body,
+.el-container,
+.el-main,
+.el-aside {
+  background-color: var(--ngt-bg-deep) !important;
+}
+
+.el-card,
+.el-dialog,
+.el-drawer__body,
+.el-table {
+  background-color: var(--ngt-bg-card) !important;
+  border-color: var(--ngt-border) !important;
+}
+
+/* ── 侧边栏 ── */
+.el-aside,
+.el-menu {
+  background-color: var(--ngt-bg-sidebar) !important;
+  border-right: 1px solid var(--ngt-border) !important;
+}
+
+.el-menu-item,
+.el-sub-menu__title {
+  color: var(--ngt-text-muted) !important;
+}
+
+.el-menu-item.is-active,
+.el-menu-item:hover {
+  background-color: rgba(124, 106, 247, 0.12) !important;
+  color: var(--ngt-accent) !important;
+}
+
+/* ── 顶栏 / Header ── */
+.el-header,
+header {
+  background: linear-gradient(
+    90deg,
+    var(--ngt-bg-sidebar) 0%,
+    rgba(92, 78, 200, 0.15) 100%
+  ) !important;
+  border-bottom: 1px solid var(--ngt-border) !important;
+}
+
+/* ── 站名标题 ── */
+.site-title,
+.logo-text,
+.brand-name,
+h1.title {
+  background: linear-gradient(135deg, var(--ngt-accent) 0%, var(--ngt-accent2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* ── 按钮 ── */
+.el-button--primary {
+  background: var(--ngt-accent) !important;
+  border-color: var(--ngt-accent) !important;
+}
+
+.el-button--primary:hover {
+  background: var(--ngt-accent-glow) !important;
+  box-shadow: 0 0 14px rgba(124, 106, 247, 0.45) !important;
+}
+
+.el-button--success {
+  background: #22a862 !important;
+  border-color: #22a862 !important;
+}
+
+/* ── Tag 标签（渠道标识）── */
+.el-tag {
+  border-radius: 6px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.03em !important;
+}
+
+/* Gemini CLI 标签 */
+.el-tag.cli-tag,
+.el-tag[type="success"] {
+  background: rgba(79, 179, 232, 0.15) !important;
+  border-color: rgba(79, 179, 232, 0.4) !important;
+  color: var(--ngt-accent2) !important;
+}
+
+/* Antigravity 标签 */
+.el-tag.ag-tag,
+.el-tag[type="warning"] {
+  background: rgba(124, 106, 247, 0.15) !important;
+  border-color: rgba(124, 106, 247, 0.4) !important;
+  color: var(--ngt-accent) !important;
+}
+
+/* Claude/Kiro 标签 */
+.el-tag.claude-tag,
+.el-tag[type="danger"] {
+  background: rgba(248, 113, 113, 0.12) !important;
+  border-color: rgba(248, 113, 113, 0.35) !important;
+  color: #f87171 !important;
+}
+
+/* ── 表格 ── */
+.el-table th,
+.el-table--striped .el-table__body tr.el-table__row--striped td {
+  background-color: rgba(124, 106, 247, 0.05) !important;
+}
+
+.el-table tr:hover > td {
+  background-color: rgba(124, 106, 247, 0.08) !important;
+}
+
+.el-table td,
+.el-table th {
+  border-bottom-color: var(--ngt-border) !important;
+}
+
+/* ── 进度条 ── */
+.el-progress-bar__inner {
+  background: linear-gradient(
+    90deg,
+    var(--ngt-accent) 0%,
+    var(--ngt-accent2) 100%
+  ) !important;
+}
+
+/* ── 输入框 ── */
+.el-input__inner,
+.el-textarea__inner {
+  background-color: rgba(255,255,255,0.04) !important;
+  border-color: var(--ngt-border) !important;
+  color: var(--ngt-text) !important;
+}
+
+.el-input__inner:focus,
+.el-textarea__inner:focus {
+  border-color: var(--ngt-accent) !important;
+  box-shadow: 0 0 0 2px rgba(124,106,247,0.2) !important;
+}
+
+/* ── 卡片 hover ── */
+.el-card:hover {
+  border-color: rgba(124, 106, 247, 0.4) !important;
+  box-shadow: 0 4px 20px rgba(124, 106, 247, 0.12) !important;
+  transition: all 0.25s ease !important;
+}
+
+/* ── 健康状态指示点 ── */
+.status-dot.healthy,
+.is-healthy {
+  color: var(--ngt-success) !important;
+}
+
+.status-dot.error {
+  color: var(--ngt-danger) !important;
+}
+
+/* ── 滚动条 ── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: var(--ngt-bg-deep);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(124, 106, 247, 0.35);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ngt-accent);
+}
+
+/* ── 登录页特效 ── */
+.login-container,
+.login-box {
+  background: var(--ngt-bg-card) !important;
+  border: 1px solid var(--ngt-border) !important;
+  box-shadow: 0 8px 40px rgba(92, 78, 200, 0.2) !important;
+}
+
+/* ── 模型列表渠道徽标 ── */
+.provider-badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.provider-badge.cli {
+  background: rgba(79,179,232,0.15);
+  color: #4fb3e8;
+  border: 1px solid rgba(79,179,232,0.3);
+}
+
+.provider-badge.ag {
+  background: rgba(124,106,247,0.15);
+  color: #7c6af7;
+  border: 1px solid rgba(124,106,247,0.3);
+}
+
+.provider-badge.kiro {
+  background: rgba(248,113,113,0.12);
+  color: #f87171;
+  border: 1px solid rgba(248,113,113,0.3);
+}
+
+/* ── 微光动画（页面加载时站名闪烁）── */
+@keyframes ngt-glow {
+  0%   { text-shadow: 0 0 8px rgba(124,106,247,0.3); }
+  50%  { text-shadow: 0 0 20px rgba(124,106,247,0.7), 0 0 40px rgba(79,179,232,0.3); }
+  100% { text-shadow: 0 0 8px rgba(124,106,247,0.3); }
+}
+
+.site-title,
+.logo-text,
+.brand-name {
+  animation: ngt-glow 3s ease-in-out infinite;
+}
