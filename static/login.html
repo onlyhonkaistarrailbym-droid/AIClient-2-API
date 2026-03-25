@@ -30,9 +30,9 @@
             transition: background-color 0.4s ease;
         }
 
-        /* 深色模式全局背景 */
+        /* 深色模式全局背景 - 调深背景，凸显玻璃面板 */
         [data-theme="dark"] body {
-            background-color: #0b0914;
+            background-color: #07050f;
             color: var(--text-primary, #e2dff0);
         }
 
@@ -77,11 +77,14 @@
             background: radial-gradient(circle, rgba(167, 139, 250, 0.3) 0%, rgba(167, 139, 250, 0) 70%);
         }
 
+        /* 深色模式光晕增强 */
         [data-theme="dark"] .blob-1 {
-            background: radial-gradient(circle, rgba(124, 106, 247, 0.25) 0%, rgba(124, 106, 247, 0) 70%);
+            background: radial-gradient(circle, rgba(124, 106, 247, 0.5) 0%, rgba(124, 106, 247, 0) 70%);
+            filter: blur(100px);
         }
         [data-theme="dark"] .blob-2 {
-            background: radial-gradient(circle, rgba(167, 139, 250, 0.2) 0%, rgba(167, 139, 250, 0) 70%);
+            background: radial-gradient(circle, rgba(167, 139, 250, 0.4) 0%, rgba(167, 139, 250, 0) 70%);
+            filter: blur(100px);
         }
 
         @keyframes float {
@@ -125,11 +128,15 @@
             animation: gradientMove 3s linear infinite;
         }
 
+        /* 深色模式面板增强 - 让玻璃感更强 */
         [data-theme="dark"] .login-container {
-            background: rgba(22, 19, 43, 0.7);
-            border: 1px solid rgba(124, 106, 247, 0.2);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4),
-                        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            background: rgba(30, 27, 60, 0.55);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1),
+                        0 0 20px rgba(124, 106, 247, 0.1);
         }
 
         @keyframes slideUpFade {
@@ -157,6 +164,11 @@
             background: linear-gradient(135deg, #7c6af7, #a78bfa);
             box-shadow: 0 8px 20px rgba(124, 106, 247, 0.3);
             animation: pulseGlow 2s infinite alternate;
+        }
+
+        [data-theme="dark"] .logo-img-wrapper {
+            box-shadow: 0 8px 25px rgba(124, 106, 247, 0.5);
+            background: linear-gradient(135deg, #8b5cf6, #c4b5fd);
         }
 
         @keyframes pulseGlow {
@@ -249,8 +261,8 @@
         }
 
         [data-theme="dark"] .form-group input {
-            background: rgba(0, 0, 0, 0.2);
-            border-color: rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.3);
+            border-color: rgba(167, 139, 250, 0.2);
             color: #f3f4f6;
         }
 
@@ -265,13 +277,18 @@
         }
 
         [data-theme="dark"] .form-group input:focus {
-            background: rgba(0, 0, 0, 0.4);
-            box-shadow: 0 0 0 4px rgba(124, 106, 247, 0.25);
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 0 4px rgba(124, 106, 247, 0.3);
+            border-color: #a78bfa;
         }
 
         /* Focus 时图标高亮 */
         .input-wrapper:focus-within i {
             color: #7c6af7;
+        }
+
+        [data-theme="dark"] .input-wrapper:focus-within i {
+            color: #a78bfa;
         }
 
         .form-group input::placeholder {
@@ -398,7 +415,7 @@
         }
 
         [data-theme="dark"] .footer {
-            border-top-color: rgba(255, 255, 255, 0.05);
+            border-top-color: rgba(255, 255, 255, 0.1);
         }
 
         .footer p {
