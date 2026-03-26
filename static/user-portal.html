@@ -321,7 +321,7 @@ function toast(msg, type='success') {
 
 async function load() {
   try {
-    const r = await fetch(BASE + '/api/uak/me', { headers: { 'x-uak-token': token } });
+    const r = await fetch(BASE + '/api/uak/me', { headers: { 'Authorization': 'Bearer ' + token } });
     if (r.status === 401) { clearTokenAndRedirect(); return; }
     const d = await r.json();
     if (!d.success) throw new Error();
@@ -331,7 +331,7 @@ async function load() {
 
   // Announcements
   try {
-    const r2 = await fetch(BASE + '/api/uak/announcements', { headers: { 'x-uak-token': token } });
+    const r2 = await fetch(BASE + '/api/uak/announcements', { headers: { 'Authorization': 'Bearer ' + token } });
     const d2 = await r2.json();
     if (d2.success && d2.announcements.length) {
       document.getElementById('annBox').style.display = '';
@@ -391,7 +391,7 @@ async function saveKey(provider) {
   try {
     const r = await fetch(BASE + '/api/uak/my-apikey', {
       method: 'PUT',
-      headers: { 'Content-Type':'application/json', 'x-uak-token': token },
+      headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ provider, apiKey: val })
     });
     const d = await r.json();
@@ -407,7 +407,7 @@ async function changePassword() {
   try {
     const r = await fetch(BASE + '/api/uak/change-password', {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', 'x-uak-token': token },
+      headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + token },
       body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass })
     });
     const d = await r.json();
@@ -417,7 +417,7 @@ async function changePassword() {
 }
 
 async function doLogout() {
-  await fetch(BASE + '/api/uak/logout', { method:'POST', headers:{'x-uak-token':token} }).catch(()=>{});
+  await fetch(BASE + '/api/uak/logout', { method:'POST', headers:{'Authorization': 'Bearer ' + token} }).catch(()=>{});
   document.cookie = 'uak_token=; max-age=0; path=/';
   localStorage.removeItem('uak_token');
   localStorage.removeItem('uak_role');

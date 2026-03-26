@@ -270,7 +270,7 @@ let registerOpen = true;
 let requireInviteCode = false;
 
 async function init() {
-  // 检查是否已经登录（防止死循环）
+  // 检查是否已登录，防止死循环
   const existingToken = localStorage.getItem('uak_token');
   if (existingToken) {
     try {
@@ -285,7 +285,7 @@ async function init() {
         }
       }
     } catch(e) {}
-    // token 无效，清除掉再显示登录页
+    // token 无效，清除后显示登录页
     localStorage.removeItem('uak_token');
     localStorage.removeItem('uak_role');
     document.cookie = 'uak_token=; max-age=0; path=/';

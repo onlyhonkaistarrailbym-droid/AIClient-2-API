@@ -416,8 +416,6 @@
         </div>
         <div class="toggle" id="togInvite" onclick="toggleSetting('requireInviteCode')"></div>
       </div>
-
-      <!-- Promote user to admin -->
       <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
         <h3 style="font-size:14px;font-weight:600;margin-bottom:6px">提升用户为管理员</h3>
         <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">将指定用户的角色提升为管理员。已是管理员则无变化。</p>
@@ -524,7 +522,7 @@ function toast(msg, type='success') {
 }
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-const hdrs = () => ({ 'Content-Type':'application/json', 'x-uak-token': token });
+const hdrs = () => ({ 'Content-Type':'application/json', 'Authorization': 'Bearer ' + token });
 
 // ─── Tab switching ─────────────────────────────────────────────
 function switchTab(name) {
@@ -658,36 +656,28 @@ async function promoteToAdmin() {
   const username = document.getElementById('promoteUsername').value.trim();
   const msgEl = document.getElementById('promoteMsg');
   if (!username) {
-    msgEl.style.display = '';
-    msgEl.style.background = 'rgba(252,129,129,0.1)';
-    msgEl.style.color = 'var(--danger)';
-    msgEl.textContent = '请输入用户名';
-    return;
+    msgEl.style.cssText = 'display:block;background:rgba(252,129,129,0.1);color:var(--danger);margin-top:10px;font-size:13px;padding:8px 12px;border-radius:var(--radius-sm)';
+    msgEl.textContent = '请输入用户名'; return;
   }
   try {
     const r = await fetch(BASE + `/api/uak/admin/users/${encodeURIComponent(username)}`, {
-      method: 'PATCH',
-      headers: hdrs(),
+      method: 'PATCH', headers: hdrs(),
       body: JSON.stringify({ role: 'admin' })
     });
     if (r.status === 403) { clearTokenAndRedirect(); return; }
     const d = await r.json();
-    msgEl.style.display = '';
+    msgEl.style.display = 'block';
     if (d.success) {
-      msgEl.style.background = 'rgba(104,211,145,0.1)';
-      msgEl.style.color = 'var(--success)';
+      msgEl.style.cssText = 'display:block;background:rgba(104,211,145,0.1);color:var(--success);margin-top:10px;font-size:13px;padding:8px 12px;border-radius:var(--radius-sm)';
       msgEl.textContent = `✓ 用户 "${username}" 已提升为管理员`;
       document.getElementById('promoteUsername').value = '';
-      loadUsers(); // refresh user list
+      loadUsers();
     } else {
-      msgEl.style.background = 'rgba(252,129,129,0.1)';
-      msgEl.style.color = 'var(--danger)';
+      msgEl.style.cssText = 'display:block;background:rgba(252,129,129,0.1);color:var(--danger);margin-top:10px;font-size:13px;padding:8px 12px;border-radius:var(--radius-sm)';
       msgEl.textContent = d.message || '操作失败，用户可能不存在';
     }
   } catch(e) {
-    msgEl.style.display = '';
-    msgEl.style.background = 'rgba(252,129,129,0.1)';
-    msgEl.style.color = 'var(--danger)';
+    msgEl.style.cssText = 'display:block;background:rgba(252,129,129,0.1);color:var(--danger);margin-top:10px;font-size:13px;padding:8px 12px;border-radius:var(--radius-sm)';
     msgEl.textContent = '网络错误';
   }
 }
