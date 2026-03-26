@@ -3,105 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户管理 — 管理员</title>
-    <link rel="stylesheet" href="app/base.css">
+    <title>用户管理 · 夜划</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background: var(--bg-secondary); min-height: 100vh; }
-        .navbar { background: var(--bg-primary); border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow-sm); }
-        .navbar-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
-        .brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 700; color: var(--text-primary); }
-        .brand i { color: var(--primary-color); }
-        .admin-badge { background: linear-gradient(135deg, var(--primary-color), var(--primary-light)); color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 99px; font-weight: 600; }
-        .nav-right { display: flex; gap: 10px; align-items: center; }
-        .btn-sm { padding: 6px 14px; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid; transition: all 0.2s; }
-        .btn-primary { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
-        .btn-outline { background: transparent; color: var(--text-secondary); border-color: var(--border-color); }
-        .btn-outline:hover { border-color: var(--danger-color); color: var(--danger-color); }
-        .main { max-width: 1100px; margin: 0 auto; padding: 28px 24px; }
-        .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
-        .stat-card { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 18px 20px; }
-        .stat-label { font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-        .stat-value { font-size: 26px; font-weight: 700; color: var(--text-primary); margin-top: 4px; }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --primary: #6366f1; --primary-dark: #4f46e5;
+            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
+            --bg: #0f0f1a; --card: rgba(20,20,40,0.7);
+            --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.04);
+            --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); min-height: 100vh; color: var(--text); }
+        .bg-orb { position: fixed; border-radius: 50%; filter: blur(100px); opacity: 0.06; pointer-events: none; z-index: 0; }
+        .bg-orb-1 { width: 600px; height: 600px; background: #6366f1; top: -200px; left: -200px; }
+        .bg-orb-2 { width: 400px; height: 400px; background: #8b5cf6; bottom: -100px; right: -100px; }
+
+        .navbar { position: sticky; top: 0; z-index: 100; background: rgba(15,15,26,0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+        .navbar-inner { max-width: 1120px; margin: 0 auto; padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; }
+        .brand { display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700; color: var(--text); }
+        .brand-icon { width: 32px; height: 32px; background: linear-gradient(135deg,#6366f1,#8b5cf6); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .admin-badge { background: rgba(99,102,241,.2); border: 1px solid rgba(99,102,241,.3); color: #818cf8; font-size: 11px; padding: 2px 8px; border-radius: 99px; font-weight: 700; }
+        .nav-right { display: flex; align-items: center; gap: 10px; }
+        .btn-nav { padding: 6px 14px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text3); font-size: 13px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: all .2s; }
+        .btn-nav:hover { border-color: rgba(99,102,241,.4); color: #818cf8; }
+        .btn-danger-nav:hover { border-color: rgba(239,68,68,.4); color: #fca5a5; }
+
+        .main { max-width: 1120px; margin: 0 auto; padding: 28px 24px; position: relative; z-index: 1; }
+
+        .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 24px; }
+        .stat-card { background: var(--card); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 16px; padding: 18px 20px; }
+        .stat-label { font-size: 11px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: .8px; display: flex; align-items: center; gap: 6px; }
+        .stat-label i { opacity: .7; }
+        .stat-value { font-size: 28px; font-weight: 800; color: var(--text); margin-top: 8px; }
+
         .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
-        .search-input { padding: 8px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-primary); color: var(--text-primary); font-size: 13px; outline: none; width: 220px; }
-        .search-input:focus { border-color: var(--primary-color); }
-        .table-wrap { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-lg); overflow: hidden; }
+        .search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 280px; }
+        .search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 13px; }
+        .search-input { width: 100%; padding: 8px 14px 8px 36px; background: var(--card); border: 1px solid var(--border); border-radius: 9px; color: var(--text); font-size: 13px; outline: none; }
+        .search-input:focus { border-color: rgba(99,102,241,.5); }
+        .btn-primary { padding: 8px 16px; background: rgba(99,102,241,.15); border: 1px solid rgba(99,102,241,.25); color: #818cf8; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all .2s; }
+        .btn-primary:hover { background: rgba(99,102,241,.25); }
+        .btn-outline { padding: 8px 14px; background: transparent; border: 1px solid var(--border); color: var(--text3); border-radius: 8px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all .2s; }
+        .btn-outline:hover { border-color: rgba(255,255,255,.15); color: var(--text2); }
+
+        .table-wrap { background: var(--card); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
-        th { padding: 12px 16px; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); background: var(--bg-secondary); text-align: left; }
-        td { padding: 12px 16px; font-size: 13px; color: var(--text-primary); border-bottom: 1px solid var(--border-color); }
+        th { padding: 11px 16px; font-size: 10px; font-weight: 800; color: var(--text3); text-transform: uppercase; letter-spacing: .8px; background: rgba(255,255,255,.02); border-bottom: 1px solid var(--border); text-align: left; white-space: nowrap; }
+        td { padding: 12px 16px; font-size: 13px; color: var(--text2); border-bottom: 1px solid var(--border2); }
         tr:last-child td { border-bottom: none; }
-        tr:hover td { background: var(--bg-secondary); }
-        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; }
-        .badge-admin { background: rgba(139,92,246,0.15); color: #7c3aed; }
-        .badge-user { background: rgba(16,185,129,0.1); color: var(--success-color); }
-        .badge-disabled { background: rgba(239,68,68,0.1); color: var(--danger-color); }
-        .progress-mini { background: var(--bg-secondary); border-radius: 99px; height: 5px; width: 80px; overflow: hidden; margin-top: 4px; }
-        .progress-fill { height: 100%; border-radius: 99px; background: var(--primary-color); }
-        .progress-fill.warning { background: var(--warning-color); }
-        .progress-fill.danger { background: var(--danger-color); }
-        .action-btn { padding: 4px 10px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid; transition: all 0.2s; background: transparent; }
-        .action-btn.edit { color: var(--primary-color); border-color: var(--primary-color); }
-        .action-btn.delete { color: var(--danger-color); border-color: var(--danger-color); }
-        .action-btn:hover { opacity: 0.8; }
+        tr:hover td { background: rgba(255,255,255,.02); }
+        td.name { color: var(--text); font-weight: 600; }
+
+        .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border-radius: 99px; font-size: 11px; font-weight: 700; }
+        .badge-admin { background: rgba(139,92,246,.15); border: 1px solid rgba(139,92,246,.25); color: #a78bfa; }
+        .badge-user { background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.2); color: #6ee7b7; }
+        .badge-disabled { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.2); color: #fca5a5; }
+
+        .progress-mini { background: rgba(255,255,255,.06); border-radius: 99px; height: 4px; width: 72px; overflow: hidden; margin-top: 5px; }
+        .pf { height: 100%; border-radius: 99px; }
+        .pf-ok { background: linear-gradient(90deg,#6366f1,#818cf8); }
+        .pf-warn { background: #f59e0b; }
+        .pf-danger { background: #ef4444; }
+
+        .action-btns { display: flex; gap: 6px; align-items: center; }
+        .act { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid; transition: all .2s; background: transparent; }
+        .act-edit { color: #818cf8; border-color: rgba(99,102,241,.3); }
+        .act-edit:hover { background: rgba(99,102,241,.1); }
+        .act-reset { color: var(--text3); border-color: var(--border); }
+        .act-reset:hover { color: var(--text2); border-color: rgba(255,255,255,.15); }
+        .act-del { color: #fca5a5; border-color: rgba(239,68,68,.3); }
+        .act-del:hover { background: rgba(239,68,68,.1); }
+
         /* Modal */
-        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: center; justify-content: center; }
-        .modal-overlay.show { display: flex; }
-        .modal { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 32px; width: 100%; max-width: 440px; box-shadow: var(--shadow-xl); }
-        .modal h2 { font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 20px; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,.6); backdrop-filter: blur(4px); z-index: 200; display: none; align-items: center; justify-content: center; padding: 20px; }
+        .overlay.show { display: flex; }
+        .modal { background: #1a1a2e; border: 1px solid var(--border); border-radius: 20px; padding: 32px; width: 100%; max-width: 440px; box-shadow: 0 32px 64px rgba(0,0,0,.5); animation: scaleIn .2s ease; }
+        @keyframes scaleIn { from { opacity:0; transform:scale(.95); } to { opacity:1; transform:scale(1); } }
+        .modal h2 { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+        .modal h2 i { color: #818cf8; }
         .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .form-group input, .form-group select { width: 100%; box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); font-size: 13px; outline: none; }
-        .form-group input:focus, .form-group select:focus { border-color: var(--primary-color); }
+        .form-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text3); margin-bottom: 7px; text-transform: uppercase; letter-spacing: .7px; }
+        .form-group input, .form-group select { width: 100%; padding: 9px 12px; background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 9px; color: var(--text); font-size: 13px; outline: none; transition: all .2s; }
+        .form-group input:focus, .form-group select:focus { border-color: rgba(99,102,241,.5); }
+        .form-group select option { background: #1a1a2e; }
         .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
-        .alert { padding: 10px 14px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 16px; display: none; }
-        .alert.error { background: rgba(239,68,68,0.1); color: var(--danger-color); }
-        .alert.success { background: rgba(16,185,129,0.1); color: var(--success-color); }
-        @media (max-width: 700px) { .stat-grid { grid-template-columns: 1fr 1fr; } }
+
+        .alert { padding: 11px 14px; border-radius: 10px; font-size: 13px; display: none; align-items: center; gap: 8px; }
+        .alert.show { display: flex; }
+        .alert.error { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.25); color: #fca5a5; }
+        .alert.success { background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.25); color: #6ee7b7; margin-bottom: 0; }
+        #globalAlert { margin-bottom: 16px; }
+        #modalAlert, #createAlert { margin-bottom: 16px; }
+
+        .empty { text-align: center; padding: 48px; color: var(--text3); }
+        .empty i { font-size: 36px; margin-bottom: 12px; opacity: .4; }
+
+        @media (max-width: 800px) { .stat-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 560px) { .stat-grid { grid-template-columns: 1fr 1fr; } th, td { padding: 10px 12px; } }
     </style>
 </head>
 <body>
+<div class="bg-orb bg-orb-1"></div>
+<div class="bg-orb bg-orb-2"></div>
 
 <nav class="navbar">
     <div class="navbar-inner">
         <div class="brand">
-            <i class="fas fa-users-cog"></i> 用户管理
+            <div class="brand-icon"><i class="fas fa-users-cog"></i></div>
+            用户管理
             <span class="admin-badge">管理员</span>
         </div>
         <div class="nav-right">
-            <a href="/index.html" style="color:var(--text-secondary);font-size:13px;text-decoration:none;"><i class="fas fa-home"></i> 主控制台</a>
-            <button class="btn-sm btn-outline" onclick="logout()"><i class="fas fa-sign-out-alt"></i> 退出</button>
+            <a href="/index.html" class="btn-nav"><i class="fas fa-home"></i> 控制台</a>
+            <button class="btn-nav btn-danger-nav" onclick="logout()"><i class="fas fa-sign-out-alt"></i> 退出</button>
         </div>
     </div>
 </nav>
 
 <div class="main">
-    <div id="globalAlert" class="alert"></div>
+    <div class="alert" id="globalAlert"></div>
 
     <div class="stat-grid">
-        <div class="stat-card"><div class="stat-label">总用户数</div><div class="stat-value" id="statTotal">-</div></div>
-        <div class="stat-card"><div class="stat-label">活跃用户</div><div class="stat-value" id="statActive">-</div></div>
-        <div class="stat-card"><div class="stat-label">今日总请求</div><div class="stat-value" id="statToday">-</div></div>
-        <div class="stat-card"><div class="stat-label">历史总请求</div><div class="stat-value" id="statAll">-</div></div>
+        <div class="stat-card"><div class="stat-label"><i class="fas fa-users"></i> 总用户</div><div class="stat-value" id="statTotal">—</div></div>
+        <div class="stat-card"><div class="stat-label"><i class="fas fa-circle-check"></i> 活跃</div><div class="stat-value" id="statActive">—</div></div>
+        <div class="stat-card"><div class="stat-label"><i class="fas fa-chart-bar"></i> 今日请求</div><div class="stat-value" id="statToday">—</div></div>
+        <div class="stat-card"><div class="stat-label"><i class="fas fa-database"></i> 历史总计</div><div class="stat-value" id="statAll">—</div></div>
     </div>
 
     <div class="toolbar">
-        <input class="search-input" id="searchInput" placeholder="搜索用户名..." oninput="filterUsers()">
-        <button class="btn-sm btn-primary" onclick="showCreateModal()"><i class="fas fa-plus"></i> 新建用户</button>
-        <button class="btn-sm btn-outline" onclick="loadData()"><i class="fas fa-sync"></i> 刷新</button>
+        <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input class="search-input" id="searchInput" placeholder="搜索用户名..." oninput="filterUsers()">
+        </div>
+        <button class="btn-primary" onclick="showCreateModal()"><i class="fas fa-plus"></i> 新建用户</button>
+        <button class="btn-outline" onclick="loadData()"><i class="fas fa-rotate"></i> 刷新</button>
     </div>
 
     <div class="table-wrap">
         <table>
             <thead>
                 <tr>
-                    <th>用户名</th>
-                    <th>角色</th>
-                    <th>今日用量</th>
-                    <th>总用量</th>
-                    <th>最近使用</th>
-                    <th>注册时间</th>
-                    <th>操作</th>
+                    <th>用户名</th><th>角色</th><th>今日用量</th><th>总用量</th><th>最近使用</th><th>注册时间</th><th>操作</th>
                 </tr>
             </thead>
             <tbody id="userTable"></tbody>
@@ -110,182 +153,121 @@
 </div>
 
 <!-- 编辑弹窗 -->
-<div class="modal-overlay" id="editModal">
+<div class="overlay" id="editModal" onclick="closeIfOverlay(event,'editModal')">
     <div class="modal">
-        <h2 id="modalTitle">编辑用户</h2>
-        <div id="modalAlert" class="alert"></div>
+        <h2><i class="fas fa-pen"></i> 编辑用户</h2>
+        <div class="alert" id="modalAlert"></div>
         <input type="hidden" id="editUsername">
-        <div class="form-group">
-            <label>用户名</label>
-            <input type="text" id="editUsernameDisplay" disabled>
-        </div>
-        <div class="form-group">
-            <label>角色</label>
-            <select id="editRole">
-                <option value="user">普通用户</option>
-                <option value="admin">管理员</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>每日额度（0=无限制）</label>
-            <input type="number" id="editDailyLimit" min="0">
-        </div>
-        <div class="form-group">
-            <label>状态</label>
-            <select id="editEnabled">
-                <option value="true">启用</option>
-                <option value="false">禁用</option>
-            </select>
-        </div>
+        <div class="form-group"><label>用户名</label><input id="editUsernameDisplay" disabled></div>
+        <div class="form-group"><label>角色</label><select id="editRole"><option value="user">普通用户</option><option value="admin">管理员</option></select></div>
+        <div class="form-group"><label>每日额度 (0=无限制)</label><input type="number" id="editDailyLimit" min="0"></div>
+        <div class="form-group"><label>状态</label><select id="editEnabled"><option value="true">启用</option><option value="false">禁用</option></select></div>
         <div class="modal-actions">
-            <button class="btn-sm btn-outline" onclick="closeModal()">取消</button>
-            <button class="btn-sm btn-primary" onclick="saveEdit()">保存</button>
+            <button class="btn-outline" onclick="document.getElementById('editModal').classList.remove('show')">取消</button>
+            <button class="btn-primary" onclick="saveEdit()">保存更改</button>
         </div>
     </div>
 </div>
 
-<!-- 新建用户弹窗 -->
-<div class="modal-overlay" id="createModal">
+<!-- 新建弹窗 -->
+<div class="overlay" id="createModal" onclick="closeIfOverlay(event,'createModal')">
     <div class="modal">
-        <h2>新建用户</h2>
-        <div id="createAlert" class="alert"></div>
-        <div class="form-group">
-            <label>用户名</label>
-            <input type="text" id="newUsername" placeholder="2~32位">
-        </div>
-        <div class="form-group">
-            <label>密码</label>
-            <input type="password" id="newPassword" placeholder="至少6位">
-        </div>
-        <div class="form-group">
-            <label>角色</label>
-            <select id="newRole">
-                <option value="user">普通用户</option>
-                <option value="admin">管理员</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>每日额度（0=无限制）</label>
-            <input type="number" id="newDailyLimit" value="200" min="0">
-        </div>
+        <h2><i class="fas fa-user-plus"></i> 新建用户</h2>
+        <div class="alert" id="createAlert"></div>
+        <div class="form-group"><label>用户名</label><input type="text" id="newUsername" placeholder="2~32 位"></div>
+        <div class="form-group"><label>密码</label><input type="password" id="newPassword" placeholder="至少 6 位"></div>
+        <div class="form-group"><label>角色</label><select id="newRole"><option value="user">普通用户</option><option value="admin">管理员</option></select></div>
+        <div class="form-group"><label>每日额度 (0=无限制)</label><input type="number" id="newDailyLimit" value="200" min="0"></div>
         <div class="modal-actions">
-            <button class="btn-sm btn-outline" onclick="document.getElementById('createModal').classList.remove('show')">取消</button>
-            <button class="btn-sm btn-primary" onclick="createUser()">创建</button>
+            <button class="btn-outline" onclick="document.getElementById('createModal').classList.remove('show')">取消</button>
+            <button class="btn-primary" onclick="createUser()">创建用户</button>
         </div>
     </div>
 </div>
 
 <script>
-// 安全跳转函数：防止在沙盒环境中触发无效的 URL 解析错误
-function safeRedirect(url) {
-    try {
-        window.location.href = url;
-    } catch (e) {
-        console.warn('预览环境拦截跳转至:', url);
-        document.body.innerHTML = `
-            <div style="padding: 60px 20px; text-align: center; color: var(--text-primary); font-family: sans-serif;">
-                <h2 style="margin-bottom: 16px;"><i class="fas fa-shield-alt" style="color: var(--primary-color);"></i> 沙盒环境拦截</h2>
-                <p>由于代码预览工具的安全限制，页面已停止向 <strong>${url}</strong> 的重定向行为。</p>
-                <p style="font-size: 13px; color: var(--text-secondary); margin-top: 8px;">(在您的真实服务器上，该跳转将正常执行)</p>
-            </div>`;
-    }
-}
-
 const TOKEN = localStorage.getItem('uak_token');
 const ROLE = localStorage.getItem('uak_role');
+if (!TOKEN || ROLE !== 'admin') window.location.href = '/user-login.html';
 
 let allUsers = [];
 
+function h() { return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN }; }
+
 function showAlert(msg, type = 'error') {
     const el = document.getElementById('globalAlert');
-    if (!el) return;
-    el.textContent = msg;
-    el.className = 'alert ' + type;
-    el.style.display = msg ? 'block' : 'none';
+    if (!msg) { el.className = 'alert'; return; }
+    el.innerHTML = `<i class="fas fa-${type==='error'?'circle-exclamation':'circle-check'}"></i> ${msg}`;
+    el.className = 'alert show ' + type;
+    if (type === 'success') setTimeout(() => { el.className = 'alert'; }, 3000);
 }
 
 function modalAlert(id, msg, type = 'error') {
     const el = document.getElementById(id);
-    if (!el) return;
-    el.textContent = msg;
-    el.className = 'alert ' + type;
-    el.style.display = msg ? 'block' : 'none';
+    if (!msg) { el.className = 'alert'; return; }
+    el.innerHTML = `<i class="fas fa-circle-exclamation"></i> ${msg}`;
+    el.className = 'alert show ' + type;
 }
 
-function headers() {
-    return { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN };
-}
+function closeIfOverlay(e, id) { if (e.target.classList.contains('overlay')) document.getElementById(id).classList.remove('show'); }
 
 async function loadData() {
     try {
-        const [usersRes, statsRes] = await Promise.all([
-            fetch('/api/uak/admin/users', { headers: headers() }),
-            fetch('/api/uak/admin/stats', { headers: headers() })
+        const [ur, sr] = await Promise.all([
+            fetch('/api/uak/admin/users', { headers: h() }),
+            fetch('/api/uak/admin/stats', { headers: h() })
         ]);
-        if (usersRes.status === 403 || usersRes.status === 401) { 
-            localStorage.clear(); 
-            safeRedirect('/user-login.html'); 
-            return; 
-        }
-
-        const usersData = await usersRes.json();
-        const statsData = await statsRes.json();
-
-        allUsers = usersData.users || [];
+        if (ur.status === 401 || ur.status === 403) { localStorage.clear(); window.location.href = '/user-login.html'; return; }
+        const ud = await ur.json(); const sd = await sr.json();
+        allUsers = ud.users || [];
         filterUsers();
-
-        if (statsData.success) {
-            const s = statsData.stats;
+        if (sd.success) {
+            const s = sd.stats;
             document.getElementById('statTotal').textContent = s.totalUsers;
             document.getElementById('statActive').textContent = s.activeUsers;
             document.getElementById('statToday').textContent = s.todayTotalUsage;
             document.getElementById('statAll').textContent = s.totalUsage;
         }
-    } catch (e) { showAlert('加载失败或解析错误，请刷新重试'); }
+    } catch(e) { showAlert('加载失败'); }
 }
 
 function filterUsers() {
     const q = document.getElementById('searchInput').value.toLowerCase();
-    const filtered = allUsers.filter(u => u.username.toLowerCase().includes(q));
-    renderTable(filtered);
+    renderTable(allUsers.filter(u => u.username.toLowerCase().includes(q)));
 }
 
 function renderTable(users) {
     const tbody = document.getElementById('userTable');
-    if (!tbody) return;
     if (!users.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:32px;">暂无用户</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><i class="fas fa-users-slash"></i><div>暂无用户</div></div></td></tr>';
         return;
     }
     tbody.innerHTML = users.map(u => {
-        const pct = u.dailyLimit > 0 ? Math.min(100, (u.todayUsage / u.dailyLimit) * 100) : 0;
-        const barClass = pct >= 90 ? 'danger' : pct >= 70 ? 'warning' : '';
-        const limitText = u.dailyLimit > 0 ? `${u.todayUsage} / ${u.dailyLimit}` : `${u.todayUsage} / ∞`;
-        const roleLabel = u.role === 'admin' ? '<span class="badge badge-admin"><i class="fas fa-crown"></i> 管理员</span>' : '<span class="badge badge-user">用户</span>';
-        const statusLabel = u.enabled ? '' : '<span class="badge badge-disabled" style="margin-left:4px;">已禁用</span>';
-        const lastUsed = u.lastUsedAt ? new Date(u.lastUsedAt).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
+        const pct = u.dailyLimit > 0 ? Math.min(100, (u.todayUsage/u.dailyLimit)*100) : 0;
+        const pfC = pct>=90?'pf-danger':pct>=70?'pf-warn':'pf-ok';
+        const limitTxt = u.dailyLimit > 0 ? `${u.todayUsage} / ${u.dailyLimit}` : `${u.todayUsage} / ∞`;
+        const roleBadge = u.role==='admin' ? `<span class="badge badge-admin"><i class="fas fa-crown"></i> 管理员</span>` : `<span class="badge badge-user">用户</span>`;
+        const disabledBadge = !u.enabled ? `<span class="badge badge-disabled" style="margin-left:5px">禁用</span>` : '';
+        const lastUsed = u.lastUsedAt ? new Date(u.lastUsedAt).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—';
         const createdAt = u.createdAt ? new Date(u.createdAt).toLocaleDateString('zh-CN') : '—';
         return `<tr>
-            <td><strong>${u.username}</strong>${statusLabel}</td>
-            <td>${roleLabel}</td>
-            <td>
-                <div>${limitText}</div>
-                ${u.dailyLimit > 0 ? `<div class="progress-mini"><div class="progress-fill ${barClass}" style="width:${pct}%"></div></div>` : ''}
-            </td>
+            <td class="name">${u.username}${disabledBadge}</td>
+            <td>${roleBadge}</td>
+            <td><div>${limitTxt}</div>${u.dailyLimit>0?`<div class="progress-mini"><div class="pf ${pfC}" style="width:${pct}%"></div></div>`:''}</td>
             <td>${u.totalUsage}</td>
-            <td style="color:var(--text-secondary)">${lastUsed}</td>
-            <td style="color:var(--text-secondary)">${createdAt}</td>
-            <td>
-                <button class="action-btn edit" onclick="showEditModal('${u.username}')">编辑</button>
-                <button class="action-btn" style="color:var(--text-secondary);border-color:var(--border-color);margin-left:4px;" onclick="resetUsage('${u.username}')">重置</button>
-                <button class="action-btn delete" style="margin-left:4px;" onclick="deleteUser('${u.username}')">删除</button>
-            </td>
+            <td>${lastUsed}</td>
+            <td>${createdAt}</td>
+            <td><div class="action-btns">
+                <button class="act act-edit" onclick="showEditModal('${u.username}')"><i class="fas fa-pen"></i> 编辑</button>
+                <button class="act act-reset" onclick="resetUsage('${u.username}')"><i class="fas fa-rotate"></i></button>
+                <button class="act act-del" onclick="deleteUser('${u.username}')"><i class="fas fa-trash"></i></button>
+            </div></td>
         </tr>`;
     }).join('');
 }
 
 function showEditModal(username) {
-    const u = allUsers.find(x => x.username === username);
+    const u = allUsers.find(x => x.username===username);
     if (!u) return;
     document.getElementById('editUsername').value = username;
     document.getElementById('editUsernameDisplay').value = username;
@@ -296,59 +278,41 @@ function showEditModal(username) {
     document.getElementById('editModal').classList.add('show');
 }
 
-function closeModal() { document.getElementById('editModal').classList.remove('show'); }
-
 async function saveEdit() {
     const username = document.getElementById('editUsername').value;
-    const body = {
-        role: document.getElementById('editRole').value,
-        dailyLimit: parseInt(document.getElementById('editDailyLimit').value) || 0,
-        enabled: document.getElementById('editEnabled').value === 'true',
-    };
+    const body = { role: document.getElementById('editRole').value, dailyLimit: parseInt(document.getElementById('editDailyLimit').value)||0, enabled: document.getElementById('editEnabled').value==='true' };
     try {
-        const res = await fetch(`/api/uak/admin/users/${encodeURIComponent(username)}`, {
-            method: 'PATCH', headers: headers(), body: JSON.stringify(body)
-        });
+        const res = await fetch(`/api/uak/admin/users/${encodeURIComponent(username)}`, { method: 'PATCH', headers: h(), body: JSON.stringify(body) });
         const data = await res.json();
-        if (data.success) { closeModal(); loadData(); showAlert('保存成功', 'success'); }
-        else {
-            const errMsg = data.message || (data.error && data.error.message) || '保存失败';
-            modalAlert('modalAlert', errMsg);
-        }
-    } catch (e) { modalAlert('modalAlert', '网络错误'); }
+        if (data.success) { document.getElementById('editModal').classList.remove('show'); loadData(); showAlert('保存成功', 'success'); }
+        else modalAlert('modalAlert', data.message || '保存失败');
+    } catch(e) { modalAlert('modalAlert', '网络错误'); }
 }
 
 async function resetUsage(username) {
-    if (!confirm(`确定要重置 "${username}" 的今日用量吗？`)) return;
+    if (!confirm(`重置 "${username}" 的今日用量？`)) return;
     try {
-        const res = await fetch(`/api/uak/admin/users/${encodeURIComponent(username)}/reset-usage`, { method: 'POST', headers: headers() });
+        const res = await fetch(`/api/uak/admin/users/${encodeURIComponent(username)}/reset-usage`, { method: 'POST', headers: h() });
         const data = await res.json();
         if (data.success) { loadData(); showAlert('用量已重置', 'success'); }
-        else {
-            const errMsg = data.message || (data.error && data.error.message) || '操作失败';
-            showAlert(errMsg);
-        }
-    } catch (e) { showAlert('网络错误'); }
+        else showAlert(data.message || '操作失败');
+    } catch(e) { showAlert('网络错误'); }
 }
 
 async function deleteUser(username) {
-    if (!confirm(`确定要删除用户 "${username}" 吗？此操作不可撤销。`)) return;
+    if (!confirm(`确定删除用户 "${username}"？此操作不可撤销。`)) return;
     try {
-        const res = await fetch(`/api/uak/admin/users/${encodeURIComponent(username)}`, { method: 'DELETE', headers: headers() });
+        const res = await fetch(`/api/uak/admin/users/${encodeURIComponent(username)}`, { method: 'DELETE', headers: h() });
         const data = await res.json();
         if (data.success) { loadData(); showAlert('用户已删除', 'success'); }
-        else {
-            const errMsg = data.message || (data.error && data.error.message) || '删除失败';
-            showAlert(errMsg);
-        }
-    } catch (e) { showAlert('网络错误'); }
+        else showAlert(data.message || '删除失败');
+    } catch(e) { showAlert('网络错误'); }
 }
 
 function showCreateModal() {
-    document.getElementById('newUsername').value = '';
-    document.getElementById('newPassword').value = '';
-    document.getElementById('newRole').value = 'user';
-    document.getElementById('newDailyLimit').value = '200';
+    ['newUsername','newPassword'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('newRole').value='user';
+    document.getElementById('newDailyLimit').value='200';
     modalAlert('createAlert', '');
     document.getElementById('createModal').classList.add('show');
 }
@@ -357,55 +321,28 @@ async function createUser() {
     const username = document.getElementById('newUsername').value.trim();
     const password = document.getElementById('newPassword').value;
     const role = document.getElementById('newRole').value;
-    const dailyLimit = parseInt(document.getElementById('newDailyLimit').value) || 0;
-
+    const dailyLimit = parseInt(document.getElementById('newDailyLimit').value)||0;
     if (!username || !password) return modalAlert('createAlert', '请填写用户名和密码');
-
     try {
-        // 先注册
-        const regRes = await fetch('/api/uak/register', {
-            method: 'POST', headers: headers(),
-            body: JSON.stringify({ username, password })
-        });
-        const regData = await regRes.json();
-        if (!regData.success) {
-            const errMsg = regData.message || (regData.error && regData.error.message) || '创建失败';
-            return modalAlert('createAlert', errMsg);
-        }
-
-        // 再更新角色和额度
-        await fetch(`/api/uak/admin/users/${encodeURIComponent(username)}`, {
-            method: 'PATCH', headers: headers(),
-            body: JSON.stringify({ role, dailyLimit })
-        });
-
+        const rr = await fetch('/api/uak/register', { method: 'POST', headers: h(), body: JSON.stringify({username, password}) });
+        const rd = await rr.json();
+        if (!rd.success) return modalAlert('createAlert', rd.message || '创建失败');
+        await fetch(`/api/uak/admin/users/${encodeURIComponent(username)}`, { method: 'PATCH', headers: h(), body: JSON.stringify({role, dailyLimit}) });
         document.getElementById('createModal').classList.remove('show');
         loadData();
         showAlert(`用户 "${username}" 创建成功`, 'success');
-    } catch (e) { modalAlert('createAlert', '网络错误'); }
+    } catch(e) { modalAlert('createAlert', '网络错误'); }
 }
 
 async function logout() {
-    try {
-        await fetch('/api/uak/logout', { method: 'POST', headers: headers() });
-    } catch(e) {} // 忽略网络错误
+    await fetch('/api/uak/logout', { method: 'POST', headers: h() }).catch(()=>{});
     localStorage.clear();
     document.cookie = 'uak_token=; max-age=0; path=/';
-    safeRedirect('/user-login.html');
+    window.location.href = '/user-login.html';
 }
 
-// 关闭弹窗点击遮罩
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('show'); });
-});
-
-// 初始化鉴权拦截与按需加载
-if (!TOKEN || ROLE !== 'admin') {
-    safeRedirect('/user-login.html');
-} else {
-    loadData();
-    setInterval(loadData, 30000);
-}
+loadData();
+setInterval(loadData, 30000);
 </script>
 </body>
 </html>

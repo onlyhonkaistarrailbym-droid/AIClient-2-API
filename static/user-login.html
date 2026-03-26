@@ -3,147 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户登录</title>
-    <link rel="stylesheet" href="app/base.css">
+    <title>用户登录 · 夜划</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { background: var(--bg-secondary); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
-        .card {
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-xl);
-            box-shadow: var(--shadow-lg);
-            padding: 40px;
-            width: 100%;
-            max-width: 420px;
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --primary: #6366f1; --primary-dark: #4f46e5; --primary-light: #818cf8;
+            --success: #10b981; --danger: #ef4444;
+            --bg: #0f0f1a; --card: rgba(20,20,40,0.85); --border: rgba(255,255,255,0.08);
+            --text: #f1f5f9; --text2: #94a3b8; --text3: #64748b;
         }
-        .logo { text-align: center; margin-bottom: 32px; }
-        .logo .icon { font-size: 48px; color: var(--primary-color); }
-        .logo h1 { margin-top: 12px; font-size: 24px; font-weight: 700; color: var(--text-primary); }
-        .logo p { color: var(--text-secondary); font-size: 14px; margin-top: 4px; }
-        .tabs { display: flex; background: var(--bg-secondary); border-radius: var(--radius-lg); padding: 4px; margin-bottom: 28px; }
-        .tab { flex: 1; padding: 8px; text-align: center; font-size: 14px; font-weight: 600; border-radius: var(--radius-md); cursor: pointer; color: var(--text-secondary); transition: all 0.2s; }
-        .tab.active { background: var(--bg-primary); color: var(--primary-color); box-shadow: var(--shadow-sm); }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .bg-orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.15; pointer-events: none; }
+        .bg-orb-1 { width: 500px; height: 500px; background: #6366f1; top: -150px; left: -150px; }
+        .bg-orb-2 { width: 350px; height: 350px; background: #06b6d4; bottom: -100px; right: -100px; }
+        .bg-orb-3 { width: 250px; height: 250px; background: #8b5cf6; top: 50%; right: 10%; }
+        .card { position: relative; z-index: 1; background: var(--card); backdrop-filter: blur(24px); border: 1px solid var(--border); border-radius: 24px; padding: 48px 44px; width: 100%; max-width: 420px; box-shadow: 0 32px 64px rgba(0,0,0,0.4); animation: slideUp 0.45s cubic-bezier(0.16,1,0.3,1); }
+        @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        .logo { text-align: center; margin-bottom: 36px; }
+        .logo-icon { width: 72px; height: 72px; background: linear-gradient(135deg,#6366f1,#8b5cf6); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 30px; color: #fff; box-shadow: 0 8px 32px rgba(99,102,241,.4); }
+        .logo h1 { font-size: 22px; font-weight: 700; color: var(--text); }
+        .logo p { color: var(--text3); font-size: 13px; margin-top: 6px; }
+        .tabs { display: flex; background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 12px; padding: 4px; margin-bottom: 28px; gap: 4px; }
+        .tab { flex: 1; padding: 9px; text-align: center; font-size: 14px; font-weight: 600; border-radius: 9px; cursor: pointer; color: var(--text3); transition: all .2s; }
+        .tab.active { background: linear-gradient(135deg,#6366f1,#4f46e5); color: #fff; box-shadow: 0 4px 12px rgba(99,102,241,.35); }
+        .tab:not(.active):hover { color: var(--text2); background: rgba(255,255,255,.05); }
+        .alert { padding: 11px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 20px; display: none; align-items: center; gap: 8px; }
+        .alert.show { display: flex; }
+        .alert.error { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.25); color: #fca5a5; }
+        .alert.success { background: rgba(16,185,129,.12); border: 1px solid rgba(16,185,129,.25); color: #6ee7b7; }
         .form-group { margin-bottom: 18px; }
-        .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
-        .form-group input { width: 100%; box-sizing: border-box; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-md); background: var(--bg-secondary); color: var(--text-primary); font-size: 14px; outline: none; transition: border-color 0.2s; }
-        .form-group input:focus { border-color: var(--primary-color); }
-        .btn-primary { width: 100%; padding: 12px; background: var(--primary-color); color: #fff; border: none; border-radius: var(--radius-md); font-size: 15px; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
-        .btn-primary:hover { opacity: 0.9; }
-        .alert { padding: 10px 14px; border-radius: var(--radius-md); font-size: 13px; margin-bottom: 16px; display: none; }
-        .alert.error { background: rgba(239,68,68,0.1); color: var(--danger-color); border: 1px solid rgba(239,68,68,0.2); }
-        .alert.success { background: rgba(16,185,129,0.1); color: var(--success-color); border: 1px solid rgba(16,185,129,0.2); }
+        .form-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: .8px; }
+        .input-wrap { position: relative; }
+        .input-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 13px; pointer-events: none; }
+        .form-group input { width: 100%; padding: 11px 14px 11px 38px; background: rgba(255,255,255,.04); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 14px; outline: none; transition: all .2s; -webkit-appearance: none; }
+        .form-group input:focus { border-color: rgba(99,102,241,.6); background: rgba(99,102,241,.06); box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
+        .form-group input::placeholder { color: var(--text3); }
         .invite-row { display: none; }
+        .btn-submit { width: 100%; padding: 13px; background: linear-gradient(135deg,#6366f1,#4f46e5); color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(99,102,241,.35); transition: all .2s; }
+        .btn-submit:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(99,102,241,.45); }
+        .btn-submit:active { transform: translateY(0); }
+        .btn-submit:disabled { opacity: .6; cursor: not-allowed; }
+        .card-footer { text-align: center; margin-top: 22px; font-size: 12px; color: var(--text3); }
     </style>
 </head>
 <body>
+<div class="bg-orb bg-orb-1"></div>
+<div class="bg-orb bg-orb-2"></div>
+<div class="bg-orb bg-orb-3"></div>
 <div class="card">
     <div class="logo">
-        <div class="icon"><i class="fas fa-user-shield"></i></div>
+        <div class="logo-icon"><i class="fas fa-shield-halved"></i></div>
         <h1>用户中心</h1>
         <p>使用自己的 API Key 访问服务</p>
     </div>
-
     <div class="tabs">
-        <div class="tab active" onclick="switchTab('login')">登录</div>
-        <div class="tab" onclick="switchTab('register')">注册</div>
+        <div class="tab active" id="tab-login" onclick="switchTab('login')"><i class="fas fa-sign-in-alt" style="margin-right:5px"></i>登录</div>
+        <div class="tab" id="tab-register" onclick="switchTab('register')"><i class="fas fa-user-plus" style="margin-right:5px"></i>注册</div>
     </div>
-
-    <div id="alert" class="alert"></div>
-
+    <div class="alert" id="alert"></div>
     <div class="form-group">
         <label>用户名</label>
-        <input type="text" id="username" placeholder="请输入用户名" autocomplete="username">
+        <div class="input-wrap"><i class="input-icon fas fa-at"></i><input type="text" id="username" placeholder="输入你的用户名" autocomplete="username"></div>
     </div>
     <div class="form-group">
         <label>密码</label>
-        <input type="password" id="password" placeholder="请输入密码" autocomplete="current-password">
+        <div class="input-wrap"><i class="input-icon fas fa-key"></i><input type="password" id="password" placeholder="输入密码" autocomplete="current-password"></div>
     </div>
     <div class="form-group invite-row" id="inviteRow">
-        <label>邀请码（可选）</label>
-        <input type="text" id="inviteCode" placeholder="如需邀请码请填写">
+        <label>邀请码 <span style="font-weight:400;text-transform:none;color:#64748b">(可选)</span></label>
+        <div class="input-wrap"><i class="input-icon fas fa-hashtag"></i><input type="text" id="inviteCode" placeholder="如需邀请码请填写"></div>
     </div>
-
-    <button class="btn-primary" onclick="submit()">
+    <button class="btn-submit" id="submitBtn" onclick="submit()">
         <span id="btnText">登录</span>
     </button>
+    <div class="card-footer">遇到问题？联系管理员获取帮助</div>
 </div>
-
 <script>
-    let mode = 'login';
-
-    function switchTab(tab) {
-        mode = tab;
-        document.querySelectorAll('.tab').forEach((t, i) => {
-            t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
-        });
-        document.getElementById('btnText').textContent = tab === 'login' ? '登录' : '注册';
-        document.getElementById('inviteRow').style.display = tab === 'register' ? 'block' : 'none';
-        showAlert('');
-    }
-
-    function showAlert(msg, type = 'error') {
-        const el = document.getElementById('alert');
-        el.textContent = msg;
-        el.className = 'alert ' + type;
-        el.style.display = msg ? 'block' : 'none';
-    }
-
-    async function submit() {
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value;
-        const inviteCode = document.getElementById('inviteCode').value.trim();
-
-        if (!username || !password) return showAlert('请填写用户名和密码');
-
+let mode = 'login';
+function switchTab(tab) {
+    mode = tab;
+    document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+    document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+    document.getElementById('btnText').textContent = tab === 'login' ? '登录' : '注册';
+    document.getElementById('inviteRow').style.display = tab === 'register' ? 'block' : 'none';
+    showAlert('');
+}
+function showAlert(msg, type = 'error') {
+    const el = document.getElementById('alert');
+    if (!msg) { el.className = 'alert'; return; }
+    el.innerHTML = `<i class="fas fa-${type==='error'?'circle-exclamation':'circle-check'}"></i> ${msg}`;
+    el.className = 'alert show ' + type;
+}
+async function submit() {
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value;
+    const inviteCode = document.getElementById('inviteCode').value.trim();
+    if (!username) return showAlert('请输入用户名');
+    if (!password) return showAlert('请输入密码');
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = '处理中...';
+    try {
         const endpoint = mode === 'login' ? '/api/uak/login' : '/api/uak/register';
-        const body = mode === 'login' ? { username, password } : { username, password, inviteCode };
-
-        try {
-            const res = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-            const data = await res.json();
-
-            // 【提取精确报错】防止静默为 "操作失败"
-            if (!data.success) {
-                const errMsg = data.message || (data.error && data.error.message) || '操作失败';
-                return showAlert(errMsg);
-            }
-
-            if (mode === 'register') {
-                showAlert('注册成功！请登录', 'success');
-                setTimeout(() => switchTab('login'), 1000);
-                return;
-            }
-
-            // 登录成功，保存 token
-            localStorage.setItem('uak_token', data.token);
-            localStorage.setItem('uak_role', data.role);
-            // 也写入 cookie 供认证使用
-            document.cookie = `uak_token=${data.token}; path=/; max-age=${7*24*3600}`;
-
-            // 跳转
-            if (data.role === 'admin') {
-                window.location.href = '/user-admin.html';
-            } else {
-                window.location.href = '/user-portal.html';
-            }
-        } catch (e) {
-            showAlert('网络错误或 JSON 解析失败，请重试');
-        }
-    }
-
-    document.addEventListener('keydown', e => { if (e.key === 'Enter') submit(); });
-
-    // 已登录则跳转
-    const token = localStorage.getItem('uak_token');
-    const role = localStorage.getItem('uak_role');
-    if (token) {
-        window.location.href = role === 'admin' ? '/user-admin.html' : '/user-portal.html';
-    }
+        const body = mode === 'login' ? {username, password} : {username, password, inviteCode};
+        const res = await fetch(endpoint, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+        const data = await res.json();
+        if (!data.success) return showAlert(data.message || '操作失败');
+        if (mode === 'register') { showAlert('注册成功！请登录', 'success'); setTimeout(() => switchTab('login'), 1000); return; }
+        localStorage.setItem('uak_token', data.token);
+        localStorage.setItem('uak_role', data.role);
+        document.cookie = `uak_token=${data.token}; path=/; max-age=${7*24*3600}; SameSite=Lax`;
+        showAlert('登录成功，正在跳转...', 'success');
+        setTimeout(() => { window.location.href = data.role === 'admin' ? '/user-admin.html' : '/user-portal.html'; }, 600);
+    } catch(e) { showAlert('网络错误，请重试'); }
+    finally { btn.disabled = false; btn.textContent = mode === 'login' ? '登录' : '注册'; }
+}
+document.addEventListener('keydown', e => { if(e.key==='Enter') submit(); });
+const token = localStorage.getItem('uak_token');
+if (token) window.location.href = localStorage.getItem('uak_role') === 'admin' ? '/user-admin.html' : '/user-portal.html';
+document.getElementById('username').focus();
 </script>
 </body>
 </html>
