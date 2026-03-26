@@ -129,33 +129,6 @@
   .section-title { font-size: 14px; font-weight: 600; }
   .section-body  { padding: 20px; }
 
-  /* API Key form */
-  .key-row {
-    display: flex; gap: 10px; align-items: flex-end;
-    margin-bottom: 12px;
-  }
-  .key-row:last-child { margin-bottom: 0; }
-  .key-group { flex: 1; }
-  .key-label {
-    font-size: 11px; font-weight: 500; color: var(--text-muted);
-    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
-  }
-  .key-input-wrap { position: relative; }
-  .key-input {
-    width: 100%; padding: 9px 14px;
-    background: var(--surface2); border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px;
-    outline: none; transition: border-color 0.2s;
-  }
-  .key-input:focus { border-color: var(--border-focus); }
-  .key-status {
-    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--surface3);
-  }
-  .key-status.set { background: var(--success); box-shadow: 0 0 6px var(--success); }
-
   .btn-save {
     padding: 9px 18px; white-space: nowrap;
     background: linear-gradient(135deg, var(--accent), #4299e1);
@@ -261,16 +234,35 @@
     </div>
   </div>
 
-  <!-- API Keys -->
+  <!-- Access Token - PRIMARY SECTION -->
   <div class="section">
     <div class="section-header">
-      <span class="section-title">API Key 配置</span>
+      <span class="section-title">🔑 你的专属 API Key</span>
     </div>
     <div class="section-body">
       <p style="font-size:13px;color:var(--text-muted);margin-bottom:18px">
-        填入您自己的真实 API Key，请求时将自动使用您的 Key 转发。Key 仅存储在服务端，界面上只显示脱敏版本。
+        将以下 Key 填入任何支持 OpenAI 格式的客户端（ChatBox、Cherry Studio、Lobechat 等）的 <strong style="color:var(--text)">API Key 栏</strong>即可使用，无需填写真实 API Key。
       </p>
-      <div id="keyForms"></div>
+
+      <!-- Key display box -->
+      <div style="background:var(--surface2);border:1px solid rgba(99,179,237,0.3);border-radius:var(--radius-sm);padding:16px 18px;margin-bottom:14px;position:relative">
+        <div style="font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px">API Key</div>
+        <div id="tokenDisplay"
+             style="font-family:'DM Mono',monospace;font-size:13px;color:var(--text);
+                    word-break:break-all;line-height:1.7;user-select:all;cursor:text">···</div>
+      </div>
+
+      <!-- Copy button + instructions -->
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <button class="btn-save" onclick="copyToken()" id="copyBtn" style="min-width:120px">📋 复制 Key</button>
+        <span style="font-size:12px;color:var(--text-muted)">API Base URL 填你的服务器地址 + <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:11px">/v1</code></span>
+      </div>
+
+      <div style="margin-top:16px;padding:12px 14px;background:rgba(246,173,85,0.07);border:1px solid rgba(246,173,85,0.2);border-radius:var(--radius-sm)">
+        <p style="font-size:12px;color:var(--warning);line-height:1.6">
+          ⚠️ 请勿将此 Key 分享给他人——它代表你的身份和额度。Key 长期有效，退出登录后重新登录会获得新 Key。
+        </p>
+      </div>
     </div>
   </div>
 
@@ -309,9 +301,6 @@ function clearTokenAndRedirect() {
 
 let userData = null;
 
-const PROVIDERS = ['anthropic', 'openai', 'gemini', 'deepseek', 'groq'];
-const PROVIDER_NAMES = { anthropic:'Anthropic', openai:'OpenAI', gemini:'Google Gemini', deepseek:'DeepSeek', groq:'Groq' };
-
 function toast(msg, type='success') {
   const el = document.getElementById('toast');
   el.textContent = msg; el.className = 'show ' + type;
@@ -321,7 +310,7 @@ function toast(msg, type='success') {
 
 async function load() {
   try {
-    const r = await fetch(BASE + '/api/uak/me', { headers: { 'Authorization': 'Bearer ' + token } });
+    const r = await fetch(BASE + '/api/uak/me', { headers: { 'x-uak-token': token } });
     if (r.status === 401) { clearTokenAndRedirect(); return; }
     const d = await r.json();
     if (!d.success) throw new Error();
@@ -331,7 +320,7 @@ async function load() {
 
   // Announcements
   try {
-    const r2 = await fetch(BASE + '/api/uak/announcements', { headers: { 'Authorization': 'Bearer ' + token } });
+    const r2 = await fetch(BASE + '/api/uak/announcements', { headers: { 'x-uak-token': token } });
     const d2 = await r2.json();
     if (d2.success && d2.announcements.length) {
       document.getElementById('annBox').style.display = '';
@@ -348,6 +337,10 @@ function escHtml(s) {
 
 function render() {
   const u = userData;
+
+  // Show access token
+  document.getElementById('tokenDisplay').textContent = token;
+
   const today = u.todayUsage || 0;
   const limit = u.dailyLimit || 0;
   const pct = limit > 0 ? Math.min(100, Math.round(today/limit*100)) : 0;
@@ -364,40 +357,23 @@ function render() {
   bar.className = 'usage-fill' + (pct>=90?' danger': pct>=70?' warn':'');
 
   if (u.role === 'admin') document.getElementById('adminBtn').style.display = '';
-
-  // Build key forms
-  const masked = u.apiKeysMasked || {};
-  const container = document.getElementById('keyForms');
-  container.innerHTML = PROVIDERS.map(p => {
-    const hasKey = !!masked[p];
-    return `
-    <div class="key-row">
-      <div class="key-group">
-        <div class="key-label">${PROVIDER_NAMES[p] || p}</div>
-        <div class="key-input-wrap">
-          <input class="key-input" id="key_${p}" type="text"
-            placeholder="${hasKey ? masked[p] : '粘贴您的 API Key'}"
-            autocomplete="off" spellcheck="false">
-          <div class="key-status ${hasKey?'set':''}" title="${hasKey?'已配置':'未配置'}"></div>
-        </div>
-      </div>
-      <button class="btn-save" onclick="saveKey('${p}')">保存</button>
-    </div>`;
-  }).join('');
 }
 
-async function saveKey(provider) {
-  const val = document.getElementById('key_' + provider).value.trim();
+async function copyToken() {
   try {
-    const r = await fetch(BASE + '/api/uak/my-apikey', {
-      method: 'PUT',
-      headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + token },
-      body: JSON.stringify({ provider, apiKey: val })
-    });
-    const d = await r.json();
-    if (d.success) { toast('✓ ' + (PROVIDER_NAMES[provider]||provider) + ' Key 已保存'); load(); }
-    else toast('保存失败', 'error');
-  } catch(e) { toast('网络错误', 'error'); }
+    await navigator.clipboard.writeText(token);
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ 已复制';
+    setTimeout(() => { btn.textContent = '📋 复制 Key'; }, 2000);
+  } catch(e) {
+    // fallback: select the text
+    const el = document.getElementById('tokenDisplay');
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    window.getSelection().removeAllRanges();
+    window.getSelection().addRange(range);
+    toast('请手动 Ctrl+C 复制');
+  }
 }
 
 async function changePassword() {
@@ -407,7 +383,7 @@ async function changePassword() {
   try {
     const r = await fetch(BASE + '/api/uak/change-password', {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + token },
+      headers: { 'Content-Type':'application/json', 'x-uak-token': token },
       body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass })
     });
     const d = await r.json();
@@ -416,8 +392,16 @@ async function changePassword() {
   } catch(e) { toast('网络错误', 'error'); }
 }
 
+function copyToken() {
+  navigator.clipboard?.writeText(token).then(() => {
+    toast('✓ Token 已复制，粘贴到客户端 API Key 栏即可');
+    const td = document.getElementById('tokenDisplay');
+    if (td) { td.style.borderColor = 'var(--success)'; setTimeout(() => td.style.borderColor = '', 1200); }
+  }).catch(() => toast('复制失败，请手动选中复制', 'error'));
+}
+
 async function doLogout() {
-  await fetch(BASE + '/api/uak/logout', { method:'POST', headers:{'Authorization': 'Bearer ' + token} }).catch(()=>{});
+  await fetch(BASE + '/api/uak/logout', { method:'POST', headers:{'x-uak-token':token} }).catch(()=>{});
   document.cookie = 'uak_token=; max-age=0; path=/';
   localStorage.removeItem('uak_token');
   localStorage.removeItem('uak_role');
