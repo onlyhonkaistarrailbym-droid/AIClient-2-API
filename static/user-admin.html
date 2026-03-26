@@ -576,6 +576,7 @@ async function loadUsers() {
     const d = await r.json();
     if (!d.success) return;
     const tbody = document.getElementById('userTable');
+    _cachedUsers = d.users;
     if (!d.users.length) {
       tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:28px">暂无用户</td></tr>';
       return;
@@ -597,7 +598,7 @@ async function loadUsers() {
         <td class="mono" style="color:var(--text-muted)">${u.totalUsage||0}</td>
         <td style="color:var(--text-muted);font-size:12px">${u.lastUsedAt ? new Date(u.lastUsedAt).toLocaleDateString() : '–'}</td>
         <td>
-          <button class="action-btn" onclick="openEdit(${JSON.stringify(JSON.stringify(u))})">编辑</button>
+          <button class="action-btn" onclick="openEditById('${escHtml(u.username)}')">编辑</button>
           <button class="action-btn success" onclick="resetUsage('${escHtml(u.username)}')">重置用量</button>
           <button class="action-btn danger" onclick="deleteUser('${escHtml(u.username)}')">删除</button>
         </td>
@@ -607,8 +608,15 @@ async function loadUsers() {
 }
 
 // ─── User edit ─────────────────────────────────────────────────
-function openEdit(userStr) {
-  const u = JSON.parse(userStr);
+let _cachedUsers = [];
+
+function openEditById(username) {
+  const u = _cachedUsers.find(x => x.username === username);
+  if (!u) { toast('找不到用户数据，请刷新后重试', 'error'); return; }
+  openEdit(u);
+}
+
+function openEdit(u) {
   document.getElementById('editUsername').value = u.username;
   document.getElementById('editRole').value     = u.role;
   document.getElementById('editLimit').value    = u.dailyLimit;
