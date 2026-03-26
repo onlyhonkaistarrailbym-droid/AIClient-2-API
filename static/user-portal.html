@@ -1,227 +1,420 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>用户中心</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-        :root{--p:#6366f1;--pd:#4f46e5;--pl:#818cf8;--s:#10b981;--d:#ef4444;--w:#f59e0b;--bg:#0f0f1a;--card:rgba(20,20,40,.72);--border:rgba(255,255,255,.07);--b2:rgba(255,255,255,.04);--text:#f1f5f9;--t2:#94a3b8;--t3:#64748b}
-        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);min-height:100vh;color:var(--text)}
-        .orb{position:fixed;border-radius:50%;filter:blur(100px);opacity:.07;pointer-events:none;z-index:0}
-        .o1{width:600px;height:600px;background:#6366f1;top:-200px;left:-200px}
-        .o2{width:400px;height:400px;background:#06b6d4;bottom:-150px;right:-150px}
-        nav{position:sticky;top:0;z-index:100;background:rgba(15,15,26,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
-        .ni{max-width:940px;margin:0 auto;padding:0 22px;height:58px;display:flex;align-items:center;justify-content:space-between}
-        .brand{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:700;color:var(--text)}
-        .bi{width:30px;height:30px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px}
-        .nr{display:flex;align-items:center;gap:10px}
-        .chip{display:flex;align-items:center;gap:6px;padding:4px 11px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.2);border-radius:20px;font-size:13px;color:#818cf8}
-        .btn-out{padding:6px 13px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--t3);font-size:13px;cursor:pointer;transition:all .2s}
-        .btn-out:hover{border-color:var(--d);color:#fca5a5}
-        main{max-width:940px;margin:0 auto;padding:26px 22px;position:relative;z-index:1}
-        /* 公告 */
-        .ann-section{margin-bottom:20px}
-        .ann-card{background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(139,92,246,.08));border:1px solid rgba(99,102,241,.2);border-radius:14px;padding:14px 18px}
-        .ann-header{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#818cf8;margin-bottom:10px;text-transform:uppercase;letter-spacing:.7px}
-        .ann-item{font-size:14px;color:var(--t2);line-height:1.65;padding:6px 0;border-bottom:1px solid rgba(99,102,241,.1)}
-        .ann-item:last-child{border-bottom:none;padding-bottom:0}
-        .ann-item .pin-icon{margin-right:5px}
-        .ann-meta{font-size:11px;color:var(--t3);margin-top:3px}
-        /* Stats */
-        .sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px}
-        .sc{background:var(--card);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
-        .sl{font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
-        .sv{font-size:28px;font-weight:800;color:var(--text);line-height:1}
-        .ss{font-size:12px;color:var(--t3);margin-top:5px}
-        .pb{background:rgba(255,255,255,.06);border-radius:99px;height:5px;margin-top:10px;overflow:hidden}
-        .pf{height:100%;border-radius:99px;transition:width .4s}
-        .f-ok{background:linear-gradient(90deg,#6366f1,#818cf8)}.f-w{background:#f59e0b}.f-d{background:#ef4444}
-        /* Section */
-        .sec{background:var(--card);backdrop-filter:blur(12px);border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:18px}
-        .sh{display:flex;align-items:center;gap:9px;margin-bottom:16px}
-        .si{width:32px;height:32px;background:rgba(99,102,241,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#818cf8;font-size:13px;flex-shrink:0}
-        .st{font-size:15px;font-weight:700;color:var(--text)}
-        .sdesc{font-size:13px;color:var(--t3);margin:-8px 0 16px;line-height:1.6}
-        /* Provider */
-        .pr{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--b2)}
-        .pr:last-child{border-bottom:none;padding-bottom:0}
-        .pn{font-size:13px;font-weight:600;color:var(--t2);width:145px;flex-shrink:0;display:flex;align-items:center;gap:6px}
-        .dot{width:7px;height:7px;border-radius:50%;background:var(--t3);flex-shrink:0}
-        .dot.on{background:var(--s);box-shadow:0 0 6px rgba(16,185,129,.5)}
-        .ki{flex:1;padding:8px 12px;background:var(--b2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;font-family:'SF Mono','Fira Code',monospace;outline:none;transition:all .2s;min-width:0}
-        .ki:focus{border-color:rgba(99,102,241,.5);background:rgba(99,102,241,.05)}
-        .ki::placeholder{color:var(--t3)}
-        .bs{padding:7px 14px;background:rgba(99,102,241,.14);border:1px solid rgba(99,102,241,.25);color:#818cf8;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s}
-        .bs:hover{background:rgba(99,102,241,.24)}
-        /* Alert */
-        .alert{padding:10px 13px;border-radius:10px;font-size:13px;margin-bottom:18px;display:none;align-items:center;gap:8px}
-        .alert.show{display:flex}
-        .alert.err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#fca5a5}
-        .alert.ok{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);color:#6ee7b7}
-        /* Endpoint */
-        .ep{display:flex;align-items:center;gap:9px;background:var(--b2);border:1px solid var(--border);border-radius:9px;padding:9px 13px;margin-top:9px}
-        .ep-l{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;white-space:nowrap}
-        .ep-t{flex:1;font-family:monospace;font-size:12px;color:var(--t2);word-break:break-all}
-        .bc{padding:4px 10px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--t3);font-size:12px;cursor:pointer;white-space:nowrap;transition:all .2s}
-        .bc:hover{border-color:rgba(99,102,241,.4);color:#818cf8}
-        /* PW */
-        .pwg{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:9px;align-items:end;margin-top:4px}
-        .pwg input{padding:8px 12px;background:var(--b2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;transition:all .2s}
-        .pwg input:focus{border-color:rgba(99,102,241,.5)}
-        .pwg input::placeholder{color:var(--t3)}
-        @media(max-width:640px){.sgrid{grid-template-columns:1fr 1fr}.pr{flex-wrap:wrap}.pn{width:100%}.pwg{grid-template-columns:1fr 1fr}.pwg .bs{grid-column:span 2}}
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>用户中心</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0c0e14;
+    --surface: #13151f;
+    --surface2: #1a1d2b;
+    --surface3: #20243a;
+    --border: rgba(255,255,255,0.07);
+    --border-focus: rgba(99,179,237,0.5);
+    --text: #e8eaf0;
+    --text-muted: #6b7394;
+    --accent: #63b3ed;
+    --accent2: #9f7aea;
+    --success: #68d391;
+    --danger: #fc8181;
+    --warning: #f6ad55;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    width: 600px; height: 400px;
+    background: radial-gradient(ellipse, rgba(99,179,237,0.06), transparent 70%);
+    top: -100px; right: -100px;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* Layout */
+  .app { max-width: 800px; margin: 0 auto; padding: 24px 20px 60px; position: relative; z-index: 1; }
+
+  /* Header */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .header-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .header-title h1 { font-size: 18px; font-weight: 600; }
+  .header-title p  { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .header-right { display: flex; gap: 10px; }
+  .btn-ghost {
+    padding: 7px 14px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted); font-family: inherit; font-size: 13px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.14); }
+
+  /* Announcements */
+  #annBox {
+    display: none;
+    margin-bottom: 20px;
+    background: rgba(99,179,237,0.05);
+    border: 1px solid rgba(99,179,237,0.15);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+  .ann-title { font-size: 12px; font-weight: 600; color: var(--accent); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .ann-item { font-size: 13px; color: var(--text); padding: 6px 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; }
+  .ann-item:last-child { border-bottom: none; }
+
+  /* Stats row */
+  .stats {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin-bottom: 20px;
+  }
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+  }
+  .stat-label { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .stat-value { font-size: 28px; font-weight: 600; font-family: 'DM Mono', monospace; }
+  .stat-value.accent  { color: var(--accent); }
+  .stat-value.success { color: var(--success); }
+  .stat-value.warning { color: var(--warning); }
+  .stat-sub { font-size: 12px; color: var(--text-muted); margin-top: 6px; }
+
+  /* Usage bar */
+  .usage-bar {
+    height: 4px; border-radius: 2px;
+    background: var(--surface3); margin-top: 10px; overflow: hidden;
+  }
+  .usage-fill {
+    height: 100%; border-radius: 2px;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+  }
+  .usage-fill.warn  { background: var(--warning); }
+  .usage-fill.danger{ background: var(--danger); }
+
+  /* Section */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+  .section-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-title { font-size: 14px; font-weight: 600; }
+  .section-body  { padding: 20px; }
+
+  /* API Key form */
+  .key-row {
+    display: flex; gap: 10px; align-items: flex-end;
+    margin-bottom: 12px;
+  }
+  .key-row:last-child { margin-bottom: 0; }
+  .key-group { flex: 1; }
+  .key-label {
+    font-size: 11px; font-weight: 500; color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+  }
+  .key-input-wrap { position: relative; }
+  .key-input {
+    width: 100%; padding: 9px 14px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px;
+    outline: none; transition: border-color 0.2s;
+  }
+  .key-input:focus { border-color: var(--border-focus); }
+  .key-status {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--surface3);
+  }
+  .key-status.set { background: var(--success); box-shadow: 0 0 6px var(--success); }
+
+  .btn-save {
+    padding: 9px 18px; white-space: nowrap;
+    background: linear-gradient(135deg, var(--accent), #4299e1);
+    border: none; border-radius: var(--radius-sm);
+    color: #fff; font-family: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  .btn-save:hover { opacity: 0.88; }
+
+  /* Change password */
+  .field { margin-bottom: 14px; }
+  label { display: block; font-size: 12px; font-weight: 500; color: var(--text-muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  input[type="password"] {
+    width: 100%; padding: 9px 14px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text); font-family: inherit; font-size: 14px;
+    outline: none; transition: border-color 0.2s;
+  }
+  input[type="password"]:focus { border-color: var(--border-focus); }
+
+  .btn-primary {
+    padding: 9px 20px;
+    background: linear-gradient(135deg, var(--accent), #4299e1);
+    border: none; border-radius: var(--radius-sm);
+    color: #fff; font-family: inherit; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: opacity 0.2s;
+  }
+  .btn-primary:hover { opacity: 0.88; }
+
+  /* Toast */
+  #toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 30px;
+    padding: 10px 20px;
+    font-size: 13px;
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none; z-index: 99;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.error { color: var(--danger); border-color: rgba(252,129,129,0.3); }
+  #toast.success { color: var(--success); border-color: rgba(104,211,145,0.3); }
+
+  /* Role badge */
+  .badge {
+    display: inline-flex; align-items: center;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge.admin { background: rgba(159,122,234,0.15); color: var(--accent2); border: 1px solid rgba(159,122,234,0.3); }
+  .badge.user  { background: rgba(99,179,237,0.1);  color: var(--accent);  border: 1px solid rgba(99,179,237,0.2); }
+
+  @media (max-width: 520px) {
+    .stats { grid-template-columns: 1fr 1fr; }
+    .key-row { flex-direction: column; }
+    .btn-save { width: 100%; }
+  }
+</style>
 </head>
 <body>
-<div class="orb o1"></div><div class="orb o2"></div>
-<nav>
-    <div class="ni">
-        <div class="brand"><div class="bi"><i class="fas fa-shield-halved"></i></div>用户中心</div>
-        <div class="nr">
-            <div class="chip"><i class="fas fa-user-circle"></i><span id="uname">…</span></div>
-            <button class="btn-out" onclick="logout()"><i class="fas fa-sign-out-alt"></i> 退出</button>
-        </div>
+<div class="app">
+  <header>
+    <div class="header-left">
+      <div class="header-icon">🔑</div>
+      <div class="header-title">
+        <h1>用户中心</h1>
+        <p id="usernameBadge">加载中…</p>
+      </div>
     </div>
-</nav>
-
-<main>
-    <div class="alert" id="ga"></div>
-
-    <!-- 公告 -->
-    <div class="ann-section" id="annSection" style="display:none">
-        <div class="ann-card">
-            <div class="ann-header"><i class="fas fa-bullhorn"></i> 管理员公告</div>
-            <div id="annList"></div>
-        </div>
+    <div class="header-right">
+      <button class="btn-ghost" id="adminBtn" style="display:none" onclick="location.href='user-admin.html'">管理后台</button>
+      <button class="btn-ghost" onclick="doLogout()">退出登录</button>
     </div>
+  </header>
 
-    <!-- 统计 -->
-    <div class="sgrid">
-        <div class="sc"><div class="sl">今日用量</div><div class="sv" id="tday">—</div><div class="ss">共 <span id="dlim">—</span> 次/天</div><div class="pb"><div class="pf f-ok" id="bar" style="width:0%"></div></div></div>
-        <div class="sc"><div class="sl">累计用量</div><div class="sv" id="total">—</div><div class="ss">历史请求总计</div></div>
-        <div class="sc"><div class="sl">最近使用</div><div class="sv" style="font-size:15px;margin-top:6px;line-height:1.5" id="last">—</div></div>
-    </div>
+  <!-- Announcements -->
+  <div id="annBox">
+    <div class="ann-title">📢 公告</div>
+    <div id="annList"></div>
+  </div>
 
-    <!-- API Keys -->
-    <div class="sec">
-        <div class="sh"><div class="si"><i class="fas fa-key"></i></div><span class="st">我的 API Keys</span></div>
-        <p class="sdesc">填写你自己的真实 API Key，请求时服务器将自动用你的 Key 转发。</p>
-        <div id="plist"></div>
+  <!-- Stats -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">今日使用</div>
+      <div class="stat-value accent" id="todayUsage">–</div>
+      <div class="usage-bar"><div class="usage-fill" id="usageBar" style="width:0%"></div></div>
+      <div class="stat-sub" id="limitLabel">/ – 次额度</div>
     </div>
+    <div class="stat-card">
+      <div class="stat-label">累计使用</div>
+      <div class="stat-value success" id="totalUsage">–</div>
+      <div class="stat-sub">全部请求总计</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">账号角色</div>
+      <div style="margin-top:4px" id="roleBadge"><span class="badge user">用户</span></div>
+      <div class="stat-sub" id="lastUsed">最近使用 –</div>
+    </div>
+  </div>
 
-    <!-- 接入 -->
-    <div class="sec">
-        <div class="sh"><div class="si"><i class="fas fa-plug"></i></div><span class="st">接入配置</span></div>
-        <p class="sdesc">在客户端配置以下信息，请求头携带 Token 即可完成认证。</p>
-        <div class="ep"><span class="ep-l">Base URL</span><span class="ep-t" id="bu"></span><button class="bc" onclick="cp('bu')"><i class="fas fa-copy"></i> 复制</button></div>
-        <div class="ep" style="margin-top:7px"><span class="ep-l">UAK Token</span><span class="ep-t" id="mt" style="font-size:11px"></span><button class="bc" onclick="cp('mt')"><i class="fas fa-copy"></i> 复制</button></div>
-        <p style="font-size:12px;color:var(--t3);margin-top:9px;line-height:1.6">请求头加入 <code style="background:rgba(255,255,255,.07);padding:2px 5px;border-radius:4px;font-size:11px">x-uak-token: &lt;Token&gt;</code> 完成认证</p>
+  <!-- API Keys -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">API Key 配置</span>
     </div>
+    <div class="section-body">
+      <p style="font-size:13px;color:var(--text-muted);margin-bottom:18px">
+        填入您自己的真实 API Key，请求时将自动使用您的 Key 转发。Key 仅存储在服务端，界面上只显示脱敏版本。
+      </p>
+      <div id="keyForms"></div>
+    </div>
+  </div>
 
-    <!-- 改密 -->
-    <div class="sec">
-        <div class="sh"><div class="si"><i class="fas fa-lock"></i></div><span class="st">修改密码</span></div>
-        <div class="pwg">
-            <input type="password" id="op" placeholder="当前密码">
-            <input type="password" id="np" placeholder="新密码（≥6位）">
-            <input type="password" id="cp2" placeholder="确认新密码">
-            <button class="bs" onclick="chpw()">更新密码</button>
-        </div>
+  <!-- Change Password -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">修改密码</span>
     </div>
-</main>
+    <div class="section-body">
+      <div class="field">
+        <label>原密码</label>
+        <input type="password" id="oldPass" placeholder="输入原密码">
+      </div>
+      <div class="field">
+        <label>新密码</label>
+        <input type="password" id="newPass" placeholder="至少 6 位">
+      </div>
+      <button class="btn-primary" onclick="changePassword()">更新密码</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
 
 <script>
-const TK=localStorage.getItem('uak_token');
-if(!TK)window.location.href='/user-login.html';
+const BASE = '';
+const token = localStorage.getItem('uak_token');
+if (!token) { location.href = 'user-login.html'; }
 
-const PROVS=[
-    {id:'claude-custom',name:'Claude 自定义'},
-    {id:'openai-custom',name:'OpenAI 自定义'},
-    {id:'gemini-cli',name:'Gemini CLI OAuth'},
-    {id:'claude-kiro',name:'Claude Kiro OAuth'},
-    {id:'grok',name:'Grok Reverse'},
-];
+let userData = null;
 
-function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
-function sa(msg,type='err'){const el=document.getElementById('ga');if(!msg){el.className='alert';return}el.innerHTML=`<i class="fas fa-${type==='err'?'circle-exclamation':'circle-check'}"></i> ${esc(msg)}`;el.className='alert show '+type;if(type==='ok')setTimeout(()=>{el.className='alert'},4000)}
+const PROVIDERS = ['anthropic', 'openai', 'gemini', 'deepseek', 'groq'];
+const PROVIDER_NAMES = { anthropic:'Anthropic', openai:'OpenAI', gemini:'Google Gemini', deepseek:'DeepSeek', groq:'Groq' };
 
-async function load(){
-    try{
-        const [mr,ar]=await Promise.all([
-            fetch('/api/uak/me',{headers:{Authorization:'Bearer '+TK}}),
-            fetch('/api/uak/announcements')
-        ]);
-        if(mr.status===401){localStorage.clear();window.location.href='/user-login.html';return}
-        const md=await mr.json(); const ad=await ar.json();
-        const u=md.user;
-        document.getElementById('uname').textContent=u.username;
-        document.getElementById('tday').textContent=u.todayUsage;
-        document.getElementById('dlim').textContent=u.dailyLimit>0?u.dailyLimit:'∞';
-        document.getElementById('total').textContent=u.totalUsage;
-        document.getElementById('last').textContent=u.lastUsedAt?new Date(u.lastUsedAt).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'暂无';
-        const pct=u.dailyLimit>0?Math.min(100,(u.todayUsage/u.dailyLimit)*100):0;
-        const bar=document.getElementById('bar');
-        bar.style.width=pct+'%';
-        bar.className='pf '+(pct>=90?'f-d':pct>=70?'f-w':'f-ok');
-        renderProvs(u.apiKeysMasked||{});
-        document.getElementById('bu').textContent=window.location.origin;
-        document.getElementById('mt').textContent=TK;
-
-        // 公告
-        const anns=(ad.announcements||[]).filter(a=>!a.archived);
-        if(anns.length){
-            const sorted=[...anns].sort((a,b)=>(b.pinned?1:0)-(a.pinned?1:0));
-            document.getElementById('annList').innerHTML=sorted.map(a=>`
-                <div class="ann-item">
-                    ${a.pinned?'<span class="pin-icon">📌</span>':''}${esc(a.content)}
-                    <div class="ann-meta">${new Date(a.createdAt).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'})}</div>
-                </div>`).join('');
-            document.getElementById('annSection').style.display='block';
-        }
-    }catch(e){sa('加载失败，请刷新')}
+function toast(msg, type='success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'show ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = '', 2800);
 }
 
-function renderProvs(masked){
-    document.getElementById('plist').innerHTML=PROVS.map(p=>`
-        <div class="pr">
-            <div class="pn"><div class="dot ${masked[p.id]?'on':''}"></div>${p.name}</div>
-            <input class="ki" id="k_${p.id}" type="password" placeholder="${masked[p.id]?'已配置（输入新值替换）':'粘贴你的 API Key'}" autocomplete="off">
-            <button class="bs" onclick="sv('${p.id}')"><i class="fas fa-save"></i> 保存</button>
-        </div>`).join('');
+async function load() {
+  try {
+    const r = await fetch(BASE + '/api/uak/me', { headers: { 'x-uak-token': token } });
+    if (r.status === 401) { location.href = 'user-login.html'; return; }
+    const d = await r.json();
+    if (!d.success) throw new Error();
+    userData = d.user;
+    render();
+  } catch(e) { toast('加载失败', 'error'); }
+
+  // Announcements
+  try {
+    const r2 = await fetch(BASE + '/api/uak/announcements', { headers: { 'x-uak-token': token } });
+    const d2 = await r2.json();
+    if (d2.success && d2.announcements.length) {
+      document.getElementById('annBox').style.display = '';
+      document.getElementById('annList').innerHTML = d2.announcements.map(a =>
+        `<div class="ann-item">${a.pinned ? '📌 ' : ''}<span>${escHtml(a.content)}</span></div>`
+      ).join('');
+    }
+  } catch(e) {}
 }
 
-async function sv(prov){
-    const el=document.getElementById('k_'+prov);
-    const k=el.value.trim();
-    if(!k)return sa('请输入 API Key');
-    try{
-        const r=await fetch('/api/uak/my-apikey',{method:'PUT',headers:{'Content-Type':'application/json',Authorization:'Bearer '+TK},body:JSON.stringify({provider:prov,apiKey:k})});
-        const d=await r.json();
-        if(d.success){el.value='';el.placeholder='已配置（输入新值替换）';el.closest('.pr').querySelector('.dot').className='dot on';sa('API Key 已保存','ok')}
-        else sa(d.message||'保存失败');
-    }catch(e){sa('网络错误')}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-async function chpw(){
-    const o=document.getElementById('op').value,n=document.getElementById('np').value,c=document.getElementById('cp2').value;
-    if(!o||!n)return sa('请填写原密码和新密码');
-    if(n!==c)return sa('两次密码不一致');
-    try{
-        const r=await fetch('/api/uak/change-password',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+TK},body:JSON.stringify({oldPassword:o,newPassword:n})});
-        const d=await r.json();
-        if(d.success){sa('密码已更新，请重新登录','ok');setTimeout(logout,1500)}
-        else sa(d.message||'修改失败');
-    }catch(e){sa('网络错误')}
+function render() {
+  const u = userData;
+  const today = u.todayUsage || 0;
+  const limit = u.dailyLimit || 0;
+  const pct = limit > 0 ? Math.min(100, Math.round(today/limit*100)) : 0;
+
+  document.getElementById('usernameBadge').textContent = u.username + (u.role==='admin' ? ' · 管理员' : '');
+  document.getElementById('todayUsage').textContent = today;
+  document.getElementById('totalUsage').textContent = u.totalUsage || 0;
+  document.getElementById('limitLabel').textContent = '/ ' + (limit > 0 ? limit : '无限') + ' 次额度';
+  document.getElementById('roleBadge').innerHTML = `<span class="badge ${u.role}">${u.role==='admin'?'管理员':'用户'}</span>`;
+  document.getElementById('lastUsed').textContent = u.lastUsedAt ? '最近 ' + new Date(u.lastUsedAt).toLocaleDateString() : '尚未使用';
+
+  const bar = document.getElementById('usageBar');
+  bar.style.width = pct + '%';
+  bar.className = 'usage-fill' + (pct>=90?' danger': pct>=70?' warn':'');
+
+  if (u.role === 'admin') document.getElementById('adminBtn').style.display = '';
+
+  // Build key forms
+  const masked = u.apiKeysMasked || {};
+  const container = document.getElementById('keyForms');
+  container.innerHTML = PROVIDERS.map(p => {
+    const hasKey = !!masked[p];
+    return `
+    <div class="key-row">
+      <div class="key-group">
+        <div class="key-label">${PROVIDER_NAMES[p] || p}</div>
+        <div class="key-input-wrap">
+          <input class="key-input" id="key_${p}" type="text"
+            placeholder="${hasKey ? masked[p] : '粘贴您的 API Key'}"
+            autocomplete="off" spellcheck="false">
+          <div class="key-status ${hasKey?'set':''}" title="${hasKey?'已配置':'未配置'}"></div>
+        </div>
+      </div>
+      <button class="btn-save" onclick="saveKey('${p}')">保存</button>
+    </div>`;
+  }).join('');
 }
 
-function cp(id){navigator.clipboard.writeText(document.getElementById(id).textContent).then(()=>sa('已复制','ok'))}
+async function saveKey(provider) {
+  const val = document.getElementById('key_' + provider).value.trim();
+  try {
+    const r = await fetch(BASE + '/api/uak/my-apikey', {
+      method: 'PUT',
+      headers: { 'Content-Type':'application/json', 'x-uak-token': token },
+      body: JSON.stringify({ provider, apiKey: val })
+    });
+    const d = await r.json();
+    if (d.success) { toast('✓ ' + (PROVIDER_NAMES[provider]||provider) + ' Key 已保存'); load(); }
+    else toast('保存失败', 'error');
+  } catch(e) { toast('网络错误', 'error'); }
+}
 
-async function logout(){
-    await fetch('/api/uak/logout',{method:'POST',headers:{Authorization:'Bearer '+TK}}).catch(()=>{});
-    localStorage.clear();document.cookie='uak_token=; max-age=0; path=/';
-    window.location.href='/user-login.html';
+async function changePassword() {
+  const oldPass = document.getElementById('oldPass').value;
+  const newPass = document.getElementById('newPass').value;
+  if (!oldPass || !newPass) return toast('请填写两个密码框', 'error');
+  try {
+    const r = await fetch(BASE + '/api/uak/change-password', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'x-uak-token': token },
+      body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass })
+    });
+    const d = await r.json();
+    if (d.success) { toast('✓ 密码已更新'); document.getElementById('oldPass').value = ''; document.getElementById('newPass').value = ''; }
+    else toast(d.message || '修改失败', 'error');
+  } catch(e) { toast('网络错误', 'error'); }
+}
+
+async function doLogout() {
+  await fetch(BASE + '/api/uak/logout', { method:'POST', headers:{'x-uak-token':token} }).catch(()=>{});
+  document.cookie = 'uak_token=; max-age=0; path=/';
+  localStorage.removeItem('uak_token');
+  localStorage.removeItem('uak_role');
+  location.href = 'user-login.html';
 }
 
 load();
