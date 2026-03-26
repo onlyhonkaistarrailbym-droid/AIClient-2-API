@@ -45,6 +45,19 @@ export async function handleUserApiKeyRoutes(method, path, req, res) {
 
     try {
 
+        // ── 紧急管理员设定（一次性，用完请删除此段）────────────
+        if (pathname === '/api/uak/emergency-promote' && method === 'GET') {
+            const username = url.searchParams.get('username');
+            const secret   = url.searchParams.get('secret');
+            if (!username || !secret) return json(res, 400, { success: false, message: '缺少参数' });
+            const { promoteToAdmin } = await import('./user-manager.js');
+            const cfg = _configGetter();
+            const expectedSecret = cfg.emergencySecret || 'uak-emergency-2026';
+            if (secret !== expectedSecret) return json(res, 403, { success: false, message: '密钥错误' });
+            const result = promoteToAdmin(username);
+            return json(res, result.success ? 200 : 404, result);
+        }
+
         // ── 公开接口 ────────────────────────────────────────────
 
         // 获取注册状态（登录页用）
