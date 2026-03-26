@@ -13,6 +13,10 @@ import {
 } from './user-manager.js';
 import logger from '../../utils/logger.js';
 
+// configGetter 供 index.js 注入，让路由模块可以读取插件配置
+let _configGetter = () => ({});
+export function setConfigGetter(fn) { _configGetter = fn; }
+
 function parseBody(req) {
     return new Promise((resolve, reject) => {
         let body = '';
