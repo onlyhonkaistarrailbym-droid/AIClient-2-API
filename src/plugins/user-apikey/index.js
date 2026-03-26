@@ -67,10 +67,15 @@ const userApiKeyPlugin = {
         let uakToken = req.headers['x-uak-token'] || parseCookieToken(req.headers['cookie']);
 
         // 同时支持标准 Authorization: Bearer 头
+        // 关键：只处理 uak_ 开头的 token，其他 Bearer（如真实 API Key sk-ant-xxx）
+        // 必须透传给 default-auth，否则会错误地拦截并返回 401
         if (!uakToken) {
             const auth = req.headers['authorization'];
             if (auth && auth.startsWith('Bearer ')) {
-                uakToken = auth.substring(7);
+                const bearer = auth.substring(7);
+                if (bearer.startsWith('uak_')) {
+                    uakToken = bearer;
+                }
             }
         }
 
@@ -82,7 +87,7 @@ const userApiKeyPlugin = {
         const userInfo = verifyToken(uakToken);
         if (!userInfo) {
             res.writeHead(401, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: { message: '未登录或会话已过期', code: 'uak_unauthorized' } }));
+            res.end(JSON.stringify({ error: { message: '未登录或会话已过期，请重新在用户中心获取 Token', code: 'uak_unauthorized' } }));
             return { handled: true, authorized: false };
         }
 
