@@ -255,11 +255,12 @@
       <!-- Copy button + instructions -->
       <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
         <button class="btn-save" onclick="copyToken()" id="copyBtn" style="min-width:120px">📋 复制 Key</button>
-        <span style="font-size:12px;color:var(--text-muted)">API Base URL 填你的服务器地址 + <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:11px">/v1</code></span>
+        <button class="btn-save" style="background:transparent;border:1px solid var(--border);color:var(--warning);" onclick="regenerateKey()">重新生成</button>
       </div>
 
       <div style="margin-top:16px;padding:12px 14px;background:rgba(246,173,85,0.07);border:1px solid rgba(246,173,85,0.2);border-radius:var(--radius-sm)">
         <p style="font-size:12px;color:var(--warning);line-height:1.6">
+          ⚠️ API Base URL 填你的服务器地址 + <code style="background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:11px;color:var(--text)">/v1</code>。<br>
           ⚠️ 请勿将此 Key 分享给他人——它代表你的身份和额度。如果重置，旧的 Key 会立刻失效。
         </p>
       </div>
@@ -291,7 +292,7 @@
 const BASE = '';
 const token = localStorage.getItem('uak_token');
 
-// 【核心修复】安全跳转机制，防止在受限的沙盒预览环境中引发 SyntaxError 报错
+// 安全跳转机制，防止在受限的沙盒预览环境中引发 SyntaxError 报错
 function safeRedirect(url) {
   try {
     window.location.href = url;
@@ -343,7 +344,11 @@ async function load() {
 
     // 渲染用户数据
     const u = d.user;
-    document.getElementById('tokenDisplay').textContent = u.proxyKey || '加载失败';
+    // 【友好提示旧账号重新生成】
+    document.getElementById('tokenDisplay').textContent = u.proxyKey || '（旧账号暂无 Key，请点击右侧【重新生成】获取）';
+    if (!u.proxyKey) {
+        document.getElementById('tokenDisplay').style.color = 'var(--warning)';
+    }
     
     const today = u.todayUsage || 0;
     const limit = u.dailyLimit || 0;
@@ -384,9 +389,29 @@ async function load() {
   } catch(e) {}
 }
 
-// 【核心修复】合并正确的复制逻辑，复制用于调用的代理 Key
+async function regenerateKey() {
+  if (!confirm('重置后旧的 Key 将立即失效！确定要重置吗？')) return;
+  try {
+    // 【核心修复】这里补充了双重头部校验，防止由于大锅饭插件拦截导致的401重置失败
+    const r = await fetch(BASE + '/api/uak/regenerate-key', { 
+        method: 'POST', 
+        headers: { 'Authorization': 'Bearer ' + token, 'x-uak-token': token } 
+    });
+    const d = await r.json();
+    if (d.success) { 
+        toast('✓ API Key 已重置'); 
+        const td = document.getElementById('tokenDisplay');
+        td.textContent = d.proxyKey; 
+        td.style.color = 'var(--text)';
+    }
+    else toast('操作失败', 'error');
+  } catch(e) { toast('网络错误', 'error'); }
+}
+
 async function copyToken() {
   const tokenVal = document.getElementById('tokenDisplay').textContent;
+  if(tokenVal.includes('重新生成')) return toast('请先点击右侧重新生成', 'error');
+  
   try {
     await navigator.clipboard.writeText(tokenVal);
     const btn = document.getElementById('copyBtn');
@@ -424,7 +449,7 @@ async function doLogout() {
   clearTokenAndRedirect();
 }
 
-// 【核心修复】确保只在 token 存在时执行加载
+// 确保只在 token 存在时执行加载
 if (!token) {
   safeRedirect('user-login.html');
 } else {
