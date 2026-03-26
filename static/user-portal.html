@@ -203,7 +203,7 @@
       </div>
     </div>
     <div class="header-right">
-      <button class="btn-ghost" id="adminBtn" style="display:none" onclick="location.href='user-admin.html'">管理后台</button>
+      <button class="btn-ghost" id="adminBtn" style="display:none" onclick="safeRedirect('user-admin.html')">管理后台</button>
       <button class="btn-ghost" onclick="doLogout()">退出登录</button>
     </div>
   </header>
@@ -234,14 +234,14 @@
     </div>
   </div>
 
-  <!-- Access Token - PRIMARY SECTION -->
+  <!-- Access Token -->
   <div class="section">
     <div class="section-header">
       <span class="section-title">🔑 你的专属 API Key</span>
     </div>
     <div class="section-body">
       <p style="font-size:13px;color:var(--text-muted);margin-bottom:18px">
-        将以下 Key 填入任何支持 OpenAI 格式的客户端（ChatBox、Cherry Studio、Lobechat 等）的 <strong style="color:var(--text)">API Key 栏</strong>即可使用，无需填写真实 API Key。
+        将以下 Key 填入任何支持 OpenAI 格式的客户端（ChatBox、Cherry Studio、酒馆等）的 <strong style="color:var(--text)">API Key 栏</strong>即可使用，无需填写真实 API Key。
       </p>
 
       <!-- Key display box -->
@@ -260,7 +260,7 @@
 
       <div style="margin-top:16px;padding:12px 14px;background:rgba(246,173,85,0.07);border:1px solid rgba(246,173,85,0.2);border-radius:var(--radius-sm)">
         <p style="font-size:12px;color:var(--warning);line-height:1.6">
-          ⚠️ 请勿将此 Key 分享给他人——它代表你的身份和额度。Key 长期有效，退出登录后重新登录会获得新 Key。
+          ⚠️ 请勿将此 Key 分享给他人——它代表你的身份和额度。如果重置，旧的 Key 会立刻失效。
         </p>
       </div>
     </div>
@@ -290,39 +290,92 @@
 <script>
 const BASE = '';
 const token = localStorage.getItem('uak_token');
-if (!token) { location.href = 'user-login.html'; }
+
+// 【核心修复】安全跳转机制，防止在受限的沙盒预览环境中引发 SyntaxError 报错
+function safeRedirect(url) {
+  try {
+    window.location.href = url;
+  } catch (e) {
+    document.body.innerHTML = `<div style="padding:60px 20px;text-align:center;"><h2 style="margin-bottom:16px;color:var(--text);">沙盒环境拦截</h2><p style="color:var(--text-muted);">代码预览工具的安全限制已阻止向 <strong>${url}</strong> 的跳转。</p><p style="font-size:13px;color:var(--text-muted);margin-top:8px;">(在您的真实服务器上将正常执行)</p></div>`;
+  }
+}
 
 function clearTokenAndRedirect() {
   localStorage.removeItem('uak_token');
   localStorage.removeItem('uak_role');
   document.cookie = 'uak_token=; max-age=0; path=/';
-  location.href = 'user-login.html';
+  safeRedirect('user-login.html');
 }
-
-let userData = null;
 
 function toast(msg, type='success') {
   const el = document.getElementById('toast');
+  if (!el) return;
   el.textContent = msg; el.className = 'show ' + type;
   clearTimeout(el._t);
   el._t = setTimeout(() => el.className = '', 2800);
 }
 
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 async function load() {
   try {
-    const r = await fetch(BASE + '/api/uak/me', { headers: { 'x-uak-token': token } });
-    if (r.status === 401) { clearTokenAndRedirect(); return; }
-    const d = await r.json();
-    if (!d.success) throw new Error();
-    userData = d.user;
-    render();
-  } catch(e) { toast('加载失败', 'error'); }
+    const r = await fetch(BASE + '/api/uak/me', {
+      headers: { 'Authorization': 'Bearer ' + token, 'x-uak-token': token }
+    });
 
-  // Announcements
+    const text = await r.text();
+    let d = {};
+    try { d = JSON.parse(text); } catch(e) {}
+
+    // 精准识别真实被踢出的原因
+    if (r.status === 401) {
+      if (d.success === false && (d.message === '未登录' || d.message === '无效的 API Key 或登录已过期')) {
+        clearTokenAndRedirect(); 
+        return;
+      }
+      toast('接口响应异常，请刷新重试', 'error');
+      return;
+    }
+
+    if (!r.ok || !d.success) throw new Error(d.message || '加载失败');
+
+    // 渲染用户数据
+    const u = d.user;
+    document.getElementById('tokenDisplay').textContent = u.proxyKey || '加载失败';
+    
+    const today = u.todayUsage || 0;
+    const limit = u.dailyLimit || 0;
+    const pct = limit > 0 ? Math.min(100, Math.round(today/limit*100)) : 0;
+
+    document.getElementById('usernameBadge').textContent = u.username + (u.role==='admin' ? ' · 管理员' : '');
+    document.getElementById('todayUsage').textContent = today;
+    document.getElementById('totalUsage').textContent = u.totalUsage || 0;
+    document.getElementById('limitLabel').textContent = '/ ' + (limit > 0 ? limit : '无限') + ' 次额度';
+    document.getElementById('roleBadge').innerHTML = `<span class="badge ${u.role}">${u.role==='admin'?'管理员':'用户'}</span>`;
+    document.getElementById('lastUsed').textContent = u.lastUsedAt ? '最近 ' + new Date(u.lastUsedAt).toLocaleDateString() : '尚未使用';
+
+    const bar = document.getElementById('usageBar');
+    bar.style.width = pct + '%';
+    bar.className = 'usage-fill' + (pct>=90?' danger': pct>=70?' warn':'');
+
+    if (u.role === 'admin') document.getElementById('adminBtn').style.display = '';
+
+  } catch(e) { 
+    toast('网络连接失败', 'error'); 
+  }
+
+  // 加载公告
   try {
-    const r2 = await fetch(BASE + '/api/uak/announcements', { headers: { 'x-uak-token': token } });
-    const d2 = await r2.json();
-    if (d2.success && d2.announcements.length) {
+    const r2 = await fetch(BASE + '/api/uak/announcements', { 
+      headers: { 'Authorization': 'Bearer ' + token, 'x-uak-token': token } 
+    });
+    const text2 = await r2.text();
+    let d2 = {};
+    try { d2 = JSON.parse(text2); } catch(e) {}
+    
+    if (d2.success && d2.announcements && d2.announcements.length) {
       document.getElementById('annBox').style.display = '';
       document.getElementById('annList').innerHTML = d2.announcements.map(a =>
         `<div class="ann-item">${a.pinned ? '📌 ' : ''}<span>${escHtml(a.content)}</span></div>`
@@ -331,48 +384,19 @@ async function load() {
   } catch(e) {}
 }
 
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function render() {
-  const u = userData;
-
-  // Show access token
-  document.getElementById('tokenDisplay').textContent = token;
-
-  const today = u.todayUsage || 0;
-  const limit = u.dailyLimit || 0;
-  const pct = limit > 0 ? Math.min(100, Math.round(today/limit*100)) : 0;
-
-  document.getElementById('usernameBadge').textContent = u.username + (u.role==='admin' ? ' · 管理员' : '');
-  document.getElementById('todayUsage').textContent = today;
-  document.getElementById('totalUsage').textContent = u.totalUsage || 0;
-  document.getElementById('limitLabel').textContent = '/ ' + (limit > 0 ? limit : '无限') + ' 次额度';
-  document.getElementById('roleBadge').innerHTML = `<span class="badge ${u.role}">${u.role==='admin'?'管理员':'用户'}</span>`;
-  document.getElementById('lastUsed').textContent = u.lastUsedAt ? '最近 ' + new Date(u.lastUsedAt).toLocaleDateString() : '尚未使用';
-
-  const bar = document.getElementById('usageBar');
-  bar.style.width = pct + '%';
-  bar.className = 'usage-fill' + (pct>=90?' danger': pct>=70?' warn':'');
-
-  if (u.role === 'admin') document.getElementById('adminBtn').style.display = '';
-}
-
+// 【核心修复】合并正确的复制逻辑，复制用于调用的代理 Key
 async function copyToken() {
+  const tokenVal = document.getElementById('tokenDisplay').textContent;
   try {
-    await navigator.clipboard.writeText(token);
+    await navigator.clipboard.writeText(tokenVal);
     const btn = document.getElementById('copyBtn');
     btn.textContent = '✓ 已复制';
     setTimeout(() => { btn.textContent = '📋 复制 Key'; }, 2000);
+    toast('✓ API Key 已复制');
+    const td = document.getElementById('tokenDisplay');
+    if (td) { td.style.color = 'var(--success)'; setTimeout(() => td.style.color = 'var(--text)', 1200); }
   } catch(e) {
-    // fallback: select the text
-    const el = document.getElementById('tokenDisplay');
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
-    toast('请手动 Ctrl+C 复制');
+    toast('请手动选中复制', 'error');
   }
 }
 
@@ -383,7 +407,7 @@ async function changePassword() {
   try {
     const r = await fetch(BASE + '/api/uak/change-password', {
       method: 'POST',
-      headers: { 'Content-Type':'application/json', 'x-uak-token': token },
+      headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + token, 'x-uak-token': token },
       body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass })
     });
     const d = await r.json();
@@ -392,23 +416,20 @@ async function changePassword() {
   } catch(e) { toast('网络错误', 'error'); }
 }
 
-function copyToken() {
-  navigator.clipboard?.writeText(token).then(() => {
-    toast('✓ Token 已复制，粘贴到客户端 API Key 栏即可');
-    const td = document.getElementById('tokenDisplay');
-    if (td) { td.style.borderColor = 'var(--success)'; setTimeout(() => td.style.borderColor = '', 1200); }
-  }).catch(() => toast('复制失败，请手动选中复制', 'error'));
-}
-
 async function doLogout() {
-  await fetch(BASE + '/api/uak/logout', { method:'POST', headers:{'x-uak-token':token} }).catch(()=>{});
-  document.cookie = 'uak_token=; max-age=0; path=/';
-  localStorage.removeItem('uak_token');
-  localStorage.removeItem('uak_role');
-  location.href = 'user-login.html';
+  await fetch(BASE + '/api/uak/logout', { 
+    method:'POST', 
+    headers:{'Authorization': 'Bearer ' + token, 'x-uak-token': token} 
+  }).catch(()=>{});
+  clearTokenAndRedirect();
 }
 
-load();
+// 【核心修复】确保只在 token 存在时执行加载
+if (!token) {
+  safeRedirect('user-login.html');
+} else {
+  load();
+}
 </script>
 </body>
 </html>
