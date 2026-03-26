@@ -244,6 +244,21 @@ export async function adminUpdateUser(username, updates) {
     return { success: true };
 }
 
+// 同步版本，供 init() 启动时调用
+export function promoteToAdmin(username) {
+    ensureLoaded();
+    const user = userStore.users[username];
+    if (!user) return { success: false, reason: 'not_found' };
+    if (user.role === 'admin') return { success: true, already: true };
+    user.role = 'admin';
+    // 同步更新该用户所有活跃 token 的角色
+    for (const info of Object.values(tokenStore.tokens)) {
+        if (info.username === username) info.role = 'admin';
+    }
+    markDirty();
+    return { success: true };
+}
+
 export async function adminResetUsage(username) {
     ensureLoaded();
     const user = userStore.users[username];

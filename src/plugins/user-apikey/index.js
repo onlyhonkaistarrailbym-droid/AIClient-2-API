@@ -14,7 +14,7 @@
  * - /user-admin.html   — 管理员用户管理
  */
 
-import { verifyToken, getUserApiKey, checkAndIncrementUsage } from './user-manager.js';
+import { verifyToken, getUserApiKey, checkAndIncrementUsage, promoteToAdmin } from './user-manager.js';
 import { handleUserApiKeyRoutes, setConfigGetter } from './api-routes.js';
 import logger from '../../utils/logger.js';
 
@@ -31,6 +31,16 @@ const userApiKeyPlugin = {
     async init(config) {
         _config = config;
         setConfigGetter(() => _config.USER_APIKEY || {});
+
+        // 如果插件配置了 adminUsername，自动提升为管理员
+        const adminUsername = (_config.USER_APIKEY || {}).adminUsername;
+        if (adminUsername) {
+            const result = promoteToAdmin(adminUsername);
+            if (result.success) {
+                logger.info(`[UserApiKey Plugin] Promoted "${adminUsername}" to admin`);
+            }
+        }
+
         logger.info('[UserApiKey Plugin] Initialized');
     },
 
@@ -53,9 +63,16 @@ const userApiKeyPlugin = {
      * 并将用户自己的真实 API Key 注入到 config 中供后续使用
      */
     async authenticate(req, res, requestUrl, config) {
-        // 优先从 x-uak-token 头获取，也支持 cookie
-        const uakToken = req.headers['x-uak-token']
-            || parseCookieToken(req.headers['cookie']);
+        // 支持 Authorization: Bearer <token> 和 x-uak-token 头，以及 cookie
+        let uakToken = req.headers['x-uak-token'] || parseCookieToken(req.headers['cookie']);
+
+        // 同时支持标准 Authorization: Bearer 头
+        if (!uakToken) {
+            const auth = req.headers['authorization'];
+            if (auth && auth.startsWith('Bearer ')) {
+                uakToken = auth.substring(7);
+            }
+        }
 
         if (!uakToken) {
             // 不是本插件的请求，交给下一个插件
