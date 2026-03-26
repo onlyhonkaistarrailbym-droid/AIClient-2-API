@@ -179,7 +179,7 @@
   input::placeholder { color: var(--text-muted); opacity: 0.5; }
 
   /* Invite code field - visibility controlled by JS after fetching register-status */
-  #inviteField { display: none; } /* hidden until JS decides */
+  #inviteField { display: block; } /* always visible in register tab */
 
   /* Submit button */
   .btn {
@@ -254,8 +254,8 @@
         <input type="password" id="regPassword" placeholder="至少 6 位" autocomplete="new-password">
       </div>
       <div class="field" id="inviteField">
-        <label>邀请码</label>
-        <input type="text" id="inviteCode" placeholder="输入邀请码" style="font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase">
+        <label id="inviteLabel">邀请码 <span style="font-weight:400;text-transform:none;letter-spacing:0;opacity:0.6">（可选）</span></label>
+        <input type="text" id="inviteCode" placeholder="如有邀请码请填写" style="font-family:'DM Mono',monospace;letter-spacing:2px;text-transform:uppercase">
       </div>
       <div class="register-closed-msg" id="registerClosedMsg">⚠️ 注册暂已关闭，请联系管理员</div>
       <button class="btn" onclick="doRegister()" id="registerBtn"
@@ -298,7 +298,15 @@ async function init() {
     if (d.success) {
       registerOpen = d.registerOpen;
       requireInviteCode = d.requireInviteCode;
-      document.getElementById('inviteField').style.display = requireInviteCode ? '' : 'none';
+      // 始终显示邀请码字段，根据设置更新标签提示
+      const inviteLabel = document.getElementById('inviteLabel');
+      if (requireInviteCode) {
+        inviteLabel.innerHTML = '邀请码 <span style="color:var(--danger);font-size:13px">*必填</span>';
+        document.getElementById('inviteCode').placeholder = '请输入邀请码（必填）';
+      } else {
+        inviteLabel.innerHTML = '邀请码 <span style="font-weight:400;text-transform:none;letter-spacing:0;opacity:0.6">（可选）</span>';
+        document.getElementById('inviteCode').placeholder = '如有邀请码请填写';
+      }
       if (!registerOpen) {
         document.getElementById('registerTabBtn').disabled = true;
         document.getElementById('registerTabBtn').style.opacity = '0.4';
@@ -339,7 +347,6 @@ function switchTab(tab) {
   document.getElementById('loginForm').style.display    = tab === 'login'    ? '' : 'none';
   document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none';
   if (tab === 'register') {
-    document.getElementById('inviteField').style.display = requireInviteCode ? '' : 'none';
     if (!registerOpen) {
       document.getElementById('registerClosedMsg').style.display = '';
       document.getElementById('registerBtn').disabled = true;
