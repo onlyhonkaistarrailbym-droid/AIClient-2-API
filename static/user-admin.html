@@ -503,8 +503,7 @@
 <script>
 const BASE = '';
 const token = localStorage.getItem('uak_token');
-const role  = localStorage.getItem('uak_role');
-if (!token || role !== 'admin') { location.href = 'user-login.html'; }
+if (!token) { location.href = 'user-login.html'; }
 
 function clearTokenAndRedirect() {
   localStorage.removeItem('uak_token');
@@ -539,6 +538,21 @@ function switchTab(name) {
 
 // ─── Init ──────────────────────────────────────────────────────
 async function init() {
+  // 从服务器验证身份，不依赖 localStorage 的 role
+  try {
+    const r = await fetch(BASE+'/api/uak/me', { headers: hdrs() });
+    if (r.status === 401) { clearTokenAndRedirect(); return; }
+    const d = await r.json();
+    if (!d.success || d.user.role !== 'admin') {
+      alert('你没有管理员权限，请重新登录');
+      clearTokenAndRedirect();
+      return;
+    }
+    localStorage.setItem('uak_role', 'admin');
+  } catch(e) {
+    alert('无法连接服务器');
+    return;
+  }
   await Promise.all([loadStats(), loadUsers()]);
 }
 
