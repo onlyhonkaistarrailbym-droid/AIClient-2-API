@@ -1,0 +1,10 @@
+{
+  "plugins": {
+    "user-apikey": {
+      "enabled": true,
+      "USER_APIKEY": {
+        "adminUsername": "Ngt"
+      }
+    }
+  }
+}
