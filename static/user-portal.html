@@ -300,6 +300,13 @@ const BASE = '';
 const token = localStorage.getItem('uak_token');
 if (!token) { location.href = 'user-login.html'; }
 
+function clearTokenAndRedirect() {
+  localStorage.removeItem('uak_token');
+  localStorage.removeItem('uak_role');
+  document.cookie = 'uak_token=; max-age=0; path=/';
+  location.href = 'user-login.html';
+}
+
 let userData = null;
 
 const PROVIDERS = ['anthropic', 'openai', 'gemini', 'deepseek', 'groq'];
@@ -315,7 +322,7 @@ function toast(msg, type='success') {
 async function load() {
   try {
     const r = await fetch(BASE + '/api/uak/me', { headers: { 'x-uak-token': token } });
-    if (r.status === 401) { location.href = 'user-login.html'; return; }
+    if (r.status === 401) { clearTokenAndRedirect(); return; }
     const d = await r.json();
     if (!d.success) throw new Error();
     userData = d.user;

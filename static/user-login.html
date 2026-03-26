@@ -270,6 +270,27 @@ let registerOpen = true;
 let requireInviteCode = false;
 
 async function init() {
+  // 检查是否已经登录（防止死循环）
+  const existingToken = localStorage.getItem('uak_token');
+  if (existingToken) {
+    try {
+      const r = await fetch(BASE + '/api/uak/me', {
+        headers: { 'Authorization': 'Bearer ' + existingToken }
+      });
+      if (r.ok) {
+        const d = await r.json();
+        if (d.success) {
+          location.href = d.user?.role === 'admin' ? 'user-admin.html' : 'user-portal.html';
+          return;
+        }
+      }
+    } catch(e) {}
+    // token 无效，清除掉再显示登录页
+    localStorage.removeItem('uak_token');
+    localStorage.removeItem('uak_role');
+    document.cookie = 'uak_token=; max-age=0; path=/';
+  }
+
   // 获取注册状态
   try {
     const r = await fetch(BASE + '/api/uak/register-status');

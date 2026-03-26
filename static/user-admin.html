@@ -416,6 +416,17 @@
         </div>
         <div class="toggle" id="togInvite" onclick="toggleSetting('requireInviteCode')"></div>
       </div>
+
+      <!-- Promote user to admin -->
+      <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+        <h3 style="font-size:14px;font-weight:600;margin-bottom:6px">提升用户为管理员</h3>
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px">将指定用户的角色提升为管理员。已是管理员则无变化。</p>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <input id="promoteUsername" style="flex:1;min-width:160px;padding:9px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:14px;outline:none" placeholder="输入用户名">
+          <button class="btn-purple" onclick="promoteToAdmin()">提升为管理员</button>
+        </div>
+        <div id="promoteMsg" style="display:none;margin-top:10px;font-size:13px;padding:8px 12px;border-radius:var(--radius-sm)"></div>
+      </div>
     </div>
   </div>
 
@@ -497,6 +508,13 @@ const token = localStorage.getItem('uak_token');
 const role  = localStorage.getItem('uak_role');
 if (!token || role !== 'admin') { location.href = 'user-login.html'; }
 
+function clearTokenAndRedirect() {
+  localStorage.removeItem('uak_token');
+  localStorage.removeItem('uak_role');
+  document.cookie = 'uak_token=; max-age=0; path=/';
+  location.href = 'user-login.html';
+}
+
 let settings = { registerOpen: true, requireInviteCode: false };
 
 function toast(msg, type='success') {
@@ -542,7 +560,7 @@ async function loadStats() {
 async function loadUsers() {
   try {
     const r = await fetch(BASE+'/api/uak/admin/users', { headers: hdrs() });
-    if (r.status === 403) { location.href = 'user-login.html'; return; }
+    if (r.status === 403) { clearTokenAndRedirect(); return; }
     const d = await r.json();
     if (!d.success) return;
     const tbody = document.getElementById('userTable');
@@ -634,6 +652,44 @@ async function loadSettings() {
       document.getElementById('togInvite').classList.toggle('on', settings.requireInviteCode);
     }
   } catch(e) {}
+}
+
+async function promoteToAdmin() {
+  const username = document.getElementById('promoteUsername').value.trim();
+  const msgEl = document.getElementById('promoteMsg');
+  if (!username) {
+    msgEl.style.display = '';
+    msgEl.style.background = 'rgba(252,129,129,0.1)';
+    msgEl.style.color = 'var(--danger)';
+    msgEl.textContent = '请输入用户名';
+    return;
+  }
+  try {
+    const r = await fetch(BASE + `/api/uak/admin/users/${encodeURIComponent(username)}`, {
+      method: 'PATCH',
+      headers: hdrs(),
+      body: JSON.stringify({ role: 'admin' })
+    });
+    if (r.status === 403) { clearTokenAndRedirect(); return; }
+    const d = await r.json();
+    msgEl.style.display = '';
+    if (d.success) {
+      msgEl.style.background = 'rgba(104,211,145,0.1)';
+      msgEl.style.color = 'var(--success)';
+      msgEl.textContent = `✓ 用户 "${username}" 已提升为管理员`;
+      document.getElementById('promoteUsername').value = '';
+      loadUsers(); // refresh user list
+    } else {
+      msgEl.style.background = 'rgba(252,129,129,0.1)';
+      msgEl.style.color = 'var(--danger)';
+      msgEl.textContent = d.message || '操作失败，用户可能不存在';
+    }
+  } catch(e) {
+    msgEl.style.display = '';
+    msgEl.style.background = 'rgba(252,129,129,0.1)';
+    msgEl.style.color = 'var(--danger)';
+    msgEl.textContent = '网络错误';
+  }
 }
 
 async function toggleSetting(key) {
