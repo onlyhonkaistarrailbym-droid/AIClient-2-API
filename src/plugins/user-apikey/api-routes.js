@@ -10,16 +10,8 @@ import {
 } from './user-manager.js';
 import logger from '../../utils/logger.js';
 
-// 【修复解析卡死】防止主程序先消耗了流，判断 req.body 与 req.complete
 function parseBody(req) {
     return new Promise((resolve, reject) => {
-        if (req.body) {
-            return resolve(typeof req.body === 'string' ? JSON.parse(req.body) : req.body);
-        }
-        if (req.complete) {
-            return resolve({}); // 数据流已被读取完
-        }
-
         let body = '';
         req.on('data', c => body += c.toString());
         req.on('end', () => {
@@ -59,11 +51,11 @@ export function setConfigGetter(fn) { _configGetter = fn; }
 
 /**
  * 主路由处理器 - /api/uak/*
+ * 注意：plugin-manager 调用时传入 (method, path, req, res)
  */
-export async function handleUserApiKeyRoutes(req, res) {
+export async function handleUserApiKeyRoutes(method, path, req, res) {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const pathname = url.pathname;
-    const method = req.method.toUpperCase();
 
     try {
         // ── 公开接口 ──────────────────────────────────────────
@@ -181,10 +173,10 @@ export async function handleUserApiKeyRoutes(req, res) {
         }
 
         // 404
-        return json(res, 404, { success: false, message: 'Not found in UAK Router' });
+        return json(res, 404, { success: false, message: 'Not found' });
 
     } catch (e) {
         logger.error('[UserApiKey Routes] Error:', e.message);
-        return json(res, 500, { success: false, message: '服务器错误: ' + e.message });
+        return json(res, 500, { success: false, message: '服务器错误' });
     }
 }
